@@ -55,6 +55,8 @@
 #include <SPI.h>
 #include <MIDI.h>
 
+//#define POT_SELECT 1
+
 // VS1053 Shield pin definitions
 #define VS_XCS    6 // Control Chip Select Pin (for accessing SPI Control/Status registers)
 #define VS_XDCS   7 // Data Chip Select / BSYNC Pin
@@ -100,6 +102,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+#ifdef POT_SELECT
   // Read the potentiometer for a value between 0 and 127
   // to use to select the instrument in the general MIDI bank
   // for channel 1.
@@ -109,7 +112,8 @@ void loop() {
     instrument = pot;
     talkMIDI(0xC0, instrument, 0);
   }
-
+#endif
+  
   // If we have MIDI data then forward it on.
   // Based on the DualMerger.ino example from the MIDI library.
   //

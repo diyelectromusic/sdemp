@@ -4,7 +4,9 @@ This repository houses the code for my Simple DIY Electronic Music Projects webs
 
 # Installation
 
-Files are provided as Arduino .ino files and can be saved directly into your Arduino src area.
+For individual project installation, choose the project you want to run from the src/SDEMP area, select the .ino file (and any others in the same area) and right click on the "raw" button to save it to your Arduino src area.  Files must be stored in a directory with the same name as the .ino file or the Arduino environment won't like it.
+
+To install all project files into your Arduino src area, select "code" and "download ZIP".  Extract and copy the SDEMP directory over to your Arduino src folder.
 
 If you like what you see, you can buy me a Ko-Fi - https://ko-fi.com/diyelectromusic
 

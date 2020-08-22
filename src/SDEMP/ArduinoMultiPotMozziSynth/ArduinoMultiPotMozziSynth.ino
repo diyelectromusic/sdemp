@@ -84,6 +84,7 @@ ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
 #define LED 13 // shows if MIDI is being recieved
 
 void HandleNoteOn(byte channel, byte note, byte velocity) {
+  envelope.noteOff(); // Stop any already playing note
   carrier_freq = mtof(note);
   setFreqs();
   envelope.noteOn();
@@ -91,7 +92,11 @@ void HandleNoteOn(byte channel, byte note, byte velocity) {
 }
 
 void HandleNoteOff(byte channel, byte note, byte velocity) {
-  envelope.noteOff();
+  if (carrier_freq == mtof(note)) {
+    // If we are still playing the same note, turn it off
+    envelope.noteOff();
+  }
+
   digitalWrite(LED, LOW);
 }
 

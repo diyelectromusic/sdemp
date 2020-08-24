@@ -45,7 +45,7 @@
 #include <tables/square_no_alias_2048_int8.h> // square table for oscillator
 #include <mozzi_midi.h>
 #include <Smooth.h>
-#include <AutoMap.h> // maps unpredictable inputs to a range
+//#include <AutoMap.h> // maps unpredictable inputs to a range
 #include <ADSR.h>
 
 // Set up the analog inputs - comment out if you aren't using this one
@@ -55,11 +55,32 @@
 #define MODR_PIN 3  // Modulation Ratio
 #define AD_A_PIN 4  // ADSR Attack
 #define AD_D_PIN 5  // ADSR Delay
+//#define TEST_NOTE 50 // Comment out to test without MIDI
+//#define DEBUG     1  // Comment out to remove debugging info - can only be used with TEST_NOTE
+                       // Note: This will probably cause "clipping" of the audio...
 
+#ifndef TEST_NOTE
 MIDI_CREATE_DEFAULT_INSTANCE();
+#endif
 
-AutoMap kMapIntensity(0,1023,10,700);
-AutoMap kMapModSpeed(0,1023,10,10000);
+// The original example used AutoMap to calibrate the range of values
+// to be expected from the sensors. However AutoMap is really for use
+// when you don't know the range of values that a sensor might produce,
+// for example with a light dependant resistor.
+//
+// When you know the full range, e.g. when using a potentiometer, then
+// AutoMap is largely obsolete.  And in my case, when there are some options
+// to use a fixed value rather than arange then AutoMap is actually
+// determinental to the final output.
+//
+// Experimentally I was finding AutoMap produced a very different output
+// for a fixed value for the Intensity of 500 compared to a potentiometer
+// reading a value of 500.  I still don't really know why, but I've taken
+// out the AutoMap as a consequence and simplified the processing in the
+// updateControl function too.
+//
+//AutoMap kMapIntensity(0,1023,10,700);
+//AutoMap kMapModSpeed(0,1023,10,10000);
 
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aCarrier;  // Wavetable will be set later
 Oscil<COS2048_NUM_CELLS, AUDIO_RATE> aModulator(COS2048_DATA);
@@ -70,6 +91,7 @@ int mod_ratio;
 int carrier_freq;
 long fm_intensity;
 int adsr_a, adsr_d;
+int testcount;
 
 // smoothing for intensity to remove clicks on transitions
 float smoothness = 0.95f;
@@ -103,10 +125,16 @@ void HandleNoteOff(byte channel, byte note, byte velocity) {
 void setup(){
   pinMode(LED, OUTPUT);
 
+#ifdef TEST_NOTE
+#ifdef DEBUG
+  Serial.begin(9600);
+#endif
+#else
   // Connect the HandleNoteOn function to the library, so it is called upon reception of a NoteOn.
   MIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
   MIDI.begin(MIDI_CHANNEL_OMNI);
+#endif
 
   adsr_a = 50;
   adsr_d = 200;
@@ -117,10 +145,10 @@ void setup(){
 
   // Set default parameters for any potentially unused/unread pots
   potcount = 0;
-  potWAVT = 0;
+  potWAVT = 2;
   potMODR = 5;
-  potINTS = 100;
-  potRATE = 500;
+  potINTS = 500;
+  potRATE = 150;
   potAD_A = 50;
   potAD_D = 200;
 
@@ -158,7 +186,9 @@ void setWavetable() {
 }
 
 void updateControl(){
+#ifndef TEST_NOTE
   MIDI.read();
+#endif
 
   // Read the potentiometers - do one on each updateControl scan.
   // Note: each potXXXX value is remembered between scans.
@@ -171,18 +201,18 @@ void updateControl(){
 #endif
     break;
   case 1:
-#ifdef MODR_PIN
-    potMODR = mozziAnalogRead(MODR_PIN) >> 7; // value is 0-7
-#endif
-    break;
-  case 2:
 #ifdef INTS_PIN
     potINTS = mozziAnalogRead(INTS_PIN); // value is 0-1023
 #endif
     break;
-  case 3:
+  case 2:
 #ifdef RATE_PIN
     potRATE = mozziAnalogRead(RATE_PIN); // value is 0-1023
+#endif
+    break;
+  case 3:
+#ifdef MODR_PIN
+    potMODR = mozziAnalogRead(MODR_PIN) >> 7; // value is 0-7
 #endif
     break;
   case 4:
@@ -198,6 +228,17 @@ void updateControl(){
   default:
     potcount = 0;
   }
+
+#ifdef TEST_NOTE
+#ifdef DEBUG
+  Serial.print(potWAVT); Serial.print("\t");
+  Serial.print(potINTS); Serial.print("\t");
+  Serial.print(potRATE); Serial.print("\t");
+  Serial.print(potMODR); Serial.print("\t");
+  Serial.print(potAD_A); Serial.print("\t");
+  Serial.print(potAD_D); Serial.print("\t");
+#endif
+#endif
 
   // See if the wavetable changed...
   if (potWAVT != wavetable) {
@@ -222,14 +263,26 @@ void updateControl(){
   envelope.update();
   setFreqs();
 
-  int INTS_calibrated = kMapIntensity(potINTS);
-
  // calculate the fm_intensity
-  fm_intensity = ((long)INTS_calibrated * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
+  fm_intensity = ((long)potINTS * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
 
   // use a float here for low frequencies
-  float mod_speed = (float)kMapModSpeed(potRATE)/1000;
+  float mod_speed = (float)potRATE/100;
   kIntensityMod.setFreq(mod_speed);
+
+#ifdef TEST_NOTE
+#ifdef DEBUG
+  Serial.print(fm_intensity); Serial.print("\t");
+  Serial.print(mod_speed); Serial.print("\n");
+#endif
+  testcount++;
+  if (testcount == 100) {
+    HandleNoteOn (1, 50, 127);
+  } else if (testcount > 300) {
+    testcount = 0;
+    HandleNoteOff (1, 50, 0);
+  }
+#endif
 }
 
 

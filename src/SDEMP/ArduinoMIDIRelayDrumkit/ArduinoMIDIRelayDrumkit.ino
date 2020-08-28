@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino MIDI Relay Drumkit
-//  https://diyelectromusic.wordpress.com/2020/06/14/arduino-midi-relay-drumkit/
+//  https://diyelectromusic.wordpress.com/
 //
       MIT License
       
@@ -29,9 +29,10 @@
 /*
   Using principles from the following Arduino tutorials:
     Arduino MIDI Library - https://github.com/FortySevenEffects/arduino_midi_library
-
+    Arduino Servo Sweep  - https://www.arduino.cc/en/tutorial/sweep
 */
 #include <MIDI.h>
+#include <Servo.h>
 
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the Arduino built-in serial port
@@ -41,13 +42,27 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 // Set the relay pins to be played for each drum.
 // And set up a list to remember the state of each drum.
 int drums[] = {
-  2, 3, 4, 5, 6, 7, 8
+  2, 3, 4, 5,
 };
 int drumstates[] = {
-  LOW, LOW, LOW, LOW, LOW, LOW, LOW
+  LOW, LOW, LOW, LOW
 };
 int numdrums;
 int numdrumstates;
+
+// This is a list of servos that act as cymbals.
+// Up to three cymbals are supported (only three,
+// unless the number of servos is increased later).
+int cymbals[] = {
+  6, 7, 8,
+};
+#define SERVO_HIGH 38
+#define SERVO_LOW 30
+int cymbalstates[] = {
+  SERVO_LOW, SERVO_LOW, SERVO_LOW,
+};
+int numcymbals;
+int numcymbalstates;
 
 // Set the MIDI notes that correspond to each drum
 // Use the "General MIDI" mappings - https://www.midi.org/specifications-old/item/gm-level-1-sound-set
@@ -72,13 +87,15 @@ int mididrums[] = {
   43,  // High floor tom
   45,  // Low tom
 
-  42,  // Closed hi-hat
-  44,  // Pedal hi-hat
-  46,  // Open hi-hat
-
   47,  // Low-mid tom
   48,  // Hi-mid tom
   50,  // Hi tom
+};
+int nummididrums;
+int midicymbals[] = {
+  42,  // Closed hi-hat
+  44,  // Pedal hi-hat
+  46,  // Open hi-hat
 
   49,  // Crash cymbal 1
   55,  // Splash cymbal
@@ -86,9 +103,14 @@ int mididrums[] = {
 
   51,  // Ride cymbal 1
   53,  // Ride bell
-  59,  // Ride cymbal 2
+  59,  // Ride cymbal 2  
 };
-int nummididrums;
+int nummidicymbals;
+
+// Initialise the Servo library
+Servo Servo1;
+Servo Servo2;
+Servo Servo3;
 
 // Drum kits listen on channel 10
 #define MIDI_DRUM_CHANNEL 10
@@ -102,6 +124,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
   if (velocity == 0) {
     // Handle this as a "note off" event
     handleNoteOff(channel, pitch, velocity);
+    return;
   }
 
   for (int i=0; i<nummididrums; i++) {
@@ -123,6 +146,42 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
       // Then set the relay to this state
       digitalWrite (drums[drum], drumstates[drum]);
     }
+  }
+  for (int i=0; i<nummidicymbals; i++) {
+    if (pitch == midicymbals[i]) {
+      // Play this cymbal
+      //
+      int cymbal = i/3;
+      if ((cymbal == 0) && (numcymbals >= 1)) {
+        // Play the first cymbal.
+        //
+        // We simply move the servo back and forth using
+        // the value in servostates, this allows different
+        // lengths of note.
+        //
+        // But first reverse the direction compared to last time.
+        toggleServo(0);
+        Servo1.write(cymbalstates[0]);
+      }
+      if ((cymbal == 1) && (numcymbals >= 2)) {
+        // Play the second cymbal
+        toggleServo(1);
+        Servo2.write(cymbalstates[1]);
+      }
+      if ((cymbal == 2) && (numcymbals >= 3)) {
+        // Play the third cymbal
+        toggleServo(2);
+        Servo3.write(cymbalstates[2]);
+      }
+    }
+  }
+}
+
+void toggleServo (int srvo) {
+  if (cymbalstates[srvo] == SERVO_LOW) {
+    cymbalstates[srvo] = SERVO_HIGH;
+  } else {
+    cymbalstates[srvo] = SERVO_LOW;
   }
 }
 
@@ -146,17 +205,38 @@ void setup() {
   
   // A programming trick to pick the lowest of two numbers.
   // This ensures that we will always have an equivalent number
-  // of drum state values for drums specified.
+  // of drum/cymbal state values for drums/cymbals specified.
   numdrums = (numdrums < numdrumstates) ? numdrums : numdrumstates;
   if (nummididrums < numdrums*3) {
     // make sure we don't have more MIDI drums than actual drums
     nummididrums = numdrums * 3;
+  }
+  // Repeat the above for the cymbals too.
+  numcymbals = sizeof(cymbals)/sizeof(cymbals[0]);
+  numcymbalstates = sizeof(cymbals)/sizeof(cymbals[0]);
+  nummidicymbals = sizeof(midicymbals)/sizeof(midicymbals[0]);
+  numcymbals = (numcymbals < numcymbalstates) ? numcymbals : numcymbalstates;
+  if (nummidicymbals < numcymbals*3) {
+    nummidicymbals = numcymbals * 3;
   }
 
   // Initialise our relay drums
   for (int i=0; i<numdrums; i++) {
     pinMode (drums[i], OUTPUT);
     digitalWrite (drums[i], drumstates[i]);
+  }
+  // Initialise our servo cymbals
+  if (numcymbals >= 1) {
+    Servo1.attach(cymbals[0]);
+    Servo1.write (cymbalstates[0]);
+  }
+  if (numcymbals >= 2) {
+    Servo2.attach(cymbals[1]);
+    Servo2.write (cymbalstates[1]);
+  }
+  if (numcymbals >= 3) {
+    Servo3.attach(cymbals[2]);
+    Servo3.write (cymbalstates[2]);
   }
 }
 

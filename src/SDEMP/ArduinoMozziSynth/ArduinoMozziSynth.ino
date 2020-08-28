@@ -65,6 +65,10 @@ int carrierfreq;
 long testcount;
 
 void HandleNoteOn(byte channel, byte note, byte velocity) {
+   if (velocity == 0) {
+      HandleNoteOff(channel, note, velocity);
+      return;
+  }
   carrierfreq = mtof(note);
   setFrequencies();
   envelope.noteOn();

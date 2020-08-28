@@ -71,6 +71,10 @@ ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
 #define LED 13 // shows if MIDI is being recieved
 
 void HandleNoteOn(byte channel, byte note, byte velocity) {
+   if (velocity == 0) {
+      HandleNoteOff(channel, note, velocity);
+      return;
+  }
   carrier_freq = mtof(note);
   setFreqs();
   envelope.noteOn();

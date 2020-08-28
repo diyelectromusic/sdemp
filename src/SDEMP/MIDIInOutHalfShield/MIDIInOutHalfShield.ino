@@ -53,6 +53,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
   if (velocity == 0) {
     // Handle this as a "note off" event
     handleNoteOff(channel, pitch, velocity);
+    return;
   }
 
   // Pass on the MIDI code for the note and a new note

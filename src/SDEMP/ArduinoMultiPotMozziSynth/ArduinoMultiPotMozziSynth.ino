@@ -48,6 +48,9 @@
 //#include <AutoMap.h> // maps unpredictable inputs to a range
 #include <ADSR.h>
 
+// Set the MIDI Channel to listen on
+#define MIDI_CHANNEL 1
+
 // Set up the analog inputs - comment out if you aren't using this one
 #define WAVT_PIN 0  // Wavetable
 #define INTS_PIN 1  // FM intensity
@@ -137,7 +140,7 @@ void setup(){
   // Connect the HandleNoteOn function to the library, so it is called upon reception of a NoteOn.
   MIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin(MIDI_CHANNEL);
 #endif
 
   adsr_a = 50;

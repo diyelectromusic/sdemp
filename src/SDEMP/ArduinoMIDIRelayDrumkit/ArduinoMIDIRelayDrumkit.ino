@@ -102,6 +102,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
   if (velocity == 0) {
     // Handle this as a "note off" event
     handleNoteOff(channel, pitch, velocity);
+    return;
   }
 
   for (int i=0; i<nummididrums; i++) {

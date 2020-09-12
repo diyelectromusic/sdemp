@@ -55,6 +55,9 @@
 
 #define WAVETABLE 2  // 0=Sine; 1=Triangle; 2=Saw; 3=Square
 
+// Set up the MIDI channel to listen on
+#define MIDI_CHANNEL MIDI_CHANNEL_OMNI
+
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSin0;  // Wavetables will be set later
@@ -93,7 +96,7 @@ int gainscale;
 // envelope generator
 ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
 
-#define LED 13 // shows if MIDI is being recieved
+#define MIDILED LED_BUILTIN // shows if MIDI is being recieved
 
 void setWavetable(int wavetable) {
   switch (wavetable) {
@@ -140,7 +143,7 @@ void HandleNoteOn(byte channel, byte note, byte velocity) {
   carrier_freq = mtof(note);
   setFreqs();
   envelope.noteOn();
-  digitalWrite(LED, HIGH);
+  digitalWrite(MIDILED, HIGH);
 }
 
 void HandleNoteOff(byte channel, byte note, byte velocity) {
@@ -148,11 +151,12 @@ void HandleNoteOff(byte channel, byte note, byte velocity) {
     // If we are still playing the same note, turn it off
     envelope.noteOff();
   }
-  digitalWrite(LED, LOW);
+  digitalWrite(MIDILED, LOW);
 }
 
 void setup(){
-  pinMode(LED, OUTPUT);
+  pinMode(MIDILED, OUTPUT);
+  digitalWrite(MIDILED, LOW);
 
 #ifdef DEBUG
   Serial.begin(9600);
@@ -160,7 +164,7 @@ void setup(){
   // Connect the HandleNoteOn function to the library, so it is called upon reception of a NoteOn.
   MIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.begin(MIDI_CHANNEL);
 #endif
 
   envelope.setADLevels(255, 128);

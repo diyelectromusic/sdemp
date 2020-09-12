@@ -55,7 +55,16 @@
 #include <SPI.h>
 #include <MIDI.h>
 
-//#define POT_SELECT 1
+// Use binary to say which MIDI channels this should respond to.
+// Every "1" here enables that channel. Set all bits for all channels.
+// Make sure the bit for channel 10 is set if you want drums.
+//
+//                               16  12  8   4  1
+//                               |   |   |   |  |
+uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
+
+// Channel to link to the potentiometer
+#define POT_MIDI_CHANNEL 1
 
 // VS1053 Shield pin definitions
 #define VS_XCS    6 // Control Chip Select Pin (for accessing SPI Control/Status registers)
@@ -69,6 +78,26 @@
 #define DRUM_SOUND_BANK    0x78  // Drums
 #define ISNTR_SOUND_BANK   0x79  // General MIDI 2 sound bank
 
+// List of instruments to send to any configured MIDI channels.
+byte preset_instruments[16] = {
+/* 01 */  0,
+/* 02 */  0,
+/* 03 */  0,
+/* 04 */  0,
+/* 05 */  0,
+/* 06 */  0,
+/* 07 */  0,
+/* 08 */  0,
+/* 09 */  0,
+/* 10 */  0,  // Channel 10 will be ignored later as that is percussion anyway.
+/* 11 */  0,
+/* 12 */  0,
+/* 13 */  0,
+/* 14 */  0,
+/* 15 */  0,
+/* 16 */  0
+};
+
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the built-in serial port.
 MIDI_CREATE_DEFAULT_INSTANCE();
@@ -80,15 +109,17 @@ void setup() {
   initialiseVS1053();
 
   // This listens to all MIDI channels
+  // They will be filtered out later...
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
   delay(1000);
 
   // A test "output" to see if the VS053 is working ok
+#ifdef POT_MIDI_CHANNEL
   for (byte i=60; i<73; i++) {
-    talkMIDI (0x90, i, 127);
+    talkMIDI (0x90|(POT_MIDI_CHANNEL-1), i, 127);
     delay (100);
-    talkMIDI (0x80, i, 0);
+    talkMIDI (0x80|(POT_MIDI_CHANNEL-1), i, 0);
     delay (200);
   }
   for (byte i=40; i<50; i++) {
@@ -97,23 +128,36 @@ void setup() {
     talkMIDI (0x89, i, 0);
     delay (200);    
   }
+#endif
+
+  // Configure the instruments for all required MIDI channels.
+  // Even though MIDI channels are 1 to 16, all the code here
+  // is working on 0 to 15 (bitshifts, index into array, MIDI command).
+  for (byte ch=0; ch<16; ch++) {
+    if (ch != 9) { // Ignore channel 10 (drums)
+      uint16_t ch_filter = 1<<ch;
+      if (MIDI_CHANNEL_FILTER & ch_filter) {
+        talkMIDI(0xC0|ch, preset_instruments[ch], 0);
+      }
+    }
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-#ifdef POT_SELECT
   // Read the potentiometer for a value between 0 and 127
   // to use to select the instrument in the general MIDI bank
-  // for channel 1.
+  // for POT_MIDI_CHANNEL (if defined).
+#ifdef POT_MIDI_CHANNEL
   byte pot = analogRead (A0) >> 3;
   if (pot != instrument) {
     // Change the instrument to play
     instrument = pot;
-    talkMIDI(0xC0, instrument, 0);
+    talkMIDI(0xC0 | (POT_MIDI_CHANNEL-1), instrument, 0);
   }
 #endif
-  
+
   // If we have MIDI data then forward it on.
   // Based on the DualMerger.ino example from the MIDI library.
   //
@@ -126,12 +170,16 @@ void loop() {
     // Any command 0xF0 or above do not (they are system messages).
     // 
     byte ch = MIDI.getChannel();
-    byte cmd = MIDI.getType();
-    if ((cmd >= 0x80) && (cmd <= 0xE0)) {
-      // Merge in the channel number
-      cmd |= (ch-1);
+    uint16_t ch_filter = 1<<(ch-1);  // bit numbers are 0 to 15; channels are 1 to 16
+    if (ch == 0) ch_filter = 0xffff; // special case - always pass system messages where ch==0
+    if (MIDI_CHANNEL_FILTER & ch_filter) {
+      byte cmd = MIDI.getType();
+      if ((cmd >= 0x80) && (cmd <= 0xE0)) {
+        // Merge in the channel number
+        cmd |= (ch-1);
+      }
+      talkMIDI(cmd, MIDI.getData1(), MIDI.getData2());
     }
-    talkMIDI(cmd, MIDI.getData1(), MIDI.getData2());
   }
 }
 

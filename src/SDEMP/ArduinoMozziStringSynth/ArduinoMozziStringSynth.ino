@@ -56,9 +56,17 @@
 #define WAVETABLE 2  // 0=Sine; 1=Triangle; 2=Saw; 3=Square
 
 // Set up the MIDI channel to listen on
-#define MIDI_CHANNEL MIDI_CHANNEL_OMNI
+#define MIDI_CHANNEL 1
 
-MIDI_CREATE_DEFAULT_INSTANCE();
+// This is a piece of "magic" code that allows us to change the default behaviour of the MIDI library
+struct MySettings : public MIDI_NAMESPACE::DefaultSettings {
+  static const bool Use1ByteParsing = false; // Allow MIDI.read to handle all received data in one go
+  static const long BaudRate = 31250;        // Doesn't build without this...
+};
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial, MIDI, MySettings);
+
+#define CONTROL_RATE 256
+
 
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSin0;  // Wavetables will be set later
 Oscil <SIN2048_NUM_CELLS, AUDIO_RATE> aSin1;
@@ -173,7 +181,7 @@ void setup(){
   potcount = 0;
   gain[0] = 255;
   setWavetable(WAVETABLE);
-  startMozzi();
+  startMozzi(CONTROL_RATE);
 
 #ifdef DEBUG
   carrier_freq = 440;

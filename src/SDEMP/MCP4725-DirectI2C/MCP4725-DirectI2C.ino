@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino MCP4725 Direct I2C
-//  https://diyelectromusic.wordpress.com/
+//  https://diyelectromusic.wordpress.com/2020/09/26/mcp4725-digital-to-analog-converter-part-3/
 //
       MIT License
       

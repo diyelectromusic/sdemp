@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino MCP4725 Direct I2C
-//  https://diyelectromusic.wordpress.com/2020/09/26/mcp4725-digital-to-analog-converter-part-3/
+//  https://diyelectromusic.wordpress.com/
 //
       MIT License
       
@@ -32,9 +32,11 @@
      Adafruit MCP4725 Library   - https://learn.adafruit.com/mcp4725-12-bit-dac-tutorial/overview
 
 */
-#include "twimaster.h"
+extern "C" {
+#include "i2cmaster.h"
+}
 
-#define MCP4725_ADDR 0x60
+int mcp4725addr;  // Will be in the range 0x60 to 0x67
 
 const PROGMEM uint16_t DACLookup_FullSine_8Bit[256] =
 {
@@ -82,27 +84,36 @@ void setup() {
   digitalWrite(A2, LOW);//Set A2 as GND
   digitalWrite(A3, HIGH);//Set A3 as Vcc
 
-  // activate internal pullups for twi.
-  digitalWrite(A4, 1); // SDA
-  digitalWrite(A5, 1); // SCL
+  // activate internal pullups for I2C
+  digitalWrite(SDA, 1);
+  digitalWrite(SCL, 1);
 
   i2c_init();
+  delay (1000);   // short delay to let things stabilise
 
-  char err = i2c_start(MCP4725_ADDR<<1 + I2C_WRITE);
-  if (err == 0) {
-    Serial.print ("Device found at address: 0x");
-    Serial.println (MCP4725_ADDR, HEX);
+  // Work out the address of the MCP4725
+  mcp4725addr = 0;
+  for (int i=0; i<8; i++) {
+    int addr = 0x60+i;
+    int err = i2c_start(addr<<1 + I2C_WRITE);
     i2c_stop();
-  } else {
-    Serial.print ("No device found. Error: 0x");
-    Serial.println (err, HEX);
-    for (;;);
+    if (err == 0) {
+      Serial.print ("Device found at address: 0x");
+      Serial.println (addr, HEX);
+      mcp4725addr = addr;
+    } else {
+      Serial.print ("No device found at address: 0x");
+      Serial.print (addr, HEX);
+      Serial.print (" Error: ");
+      Serial.println (err, HEX);
+    }
   }
 }
 
 void dacWrite (uint16_t dacvalue) {
-  if (i2c_start(MCP4725_ADDR<<1 + I2C_WRITE)) {
+  if (i2c_start(mcp4725addr<<1 + I2C_WRITE)) {
     // Can't find device, so...
+    i2c_stop();
     return;
   }
 

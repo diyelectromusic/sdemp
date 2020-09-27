@@ -38,7 +38,7 @@ extern "C" {
 
 /* A note on I2C Bus Speeds.
 
-   Typically it will run a 100kHz, but there is also a high speed 400kHz mode.
+   Standard mode I2C is 100kbps, but there is also a fast mode of 400kbps.
    To change the mode, there if a definition at the top of twimaster.c as follows:
 
 #define SCL_CLOCK  100000L

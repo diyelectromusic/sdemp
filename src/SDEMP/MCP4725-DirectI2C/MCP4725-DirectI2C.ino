@@ -36,6 +36,17 @@ extern "C" {
 #include "i2cmaster.h"
 }
 
+/* A note on I2C Bus Speeds.
+
+   Typically it will run a 100kHz, but there is also a high speed 400kHz mode.
+   To change the mode, there if a definition at the top of twimaster.c as follows:
+
+#define SCL_CLOCK  100000L
+
+   This can be changed 400000L to select the higher speed mode.
+
+*/
+
 int mcp4725addr;  // Will be in the range 0x60 to 0x67
 
 const PROGMEM uint16_t DACLookup_FullSine_8Bit[256] =
@@ -89,7 +100,7 @@ void setup() {
   digitalWrite(SCL, 1);
 
   i2c_init();
-  delay (1000);   // short delay to let things stabilise
+  delay (1000);   // short delay to let things stabilize
 
   // Work out the address of the MCP4725
   mcp4725addr = 0;
@@ -117,14 +128,19 @@ void dacWrite (uint16_t dacvalue) {
     return;
   }
 
-  // Each write of a dac value is three words:
-  //    The I2C command: 0x40 for a simple write
-  //    The two values:  Upper 8 bits - d11-d10-d9-d9-d7-d6-d5-d4
-  //                     Lower 4 bits - d3-d2-d1-d0-0-0-0-0
+  // There are several modes of writing DAC values (see the MCP4725 datasheet).
+  // In summary:
+  //     Fast Write Mode requires two bytes:
+  //          0x0n + Upper 4 bits of data - d11-d10-d9-d8
+  //                 Lower 8 bits of data - d7-d6-d5-d4-d3-d2-d1-d0
   //
-  uint8_t val1 = dacvalue >> 4;
-  uint8_t val2 = (dacvalue & 0xf) << 4;
-  i2c_write(0x40);
+  //     "Normal" DAC write requires three bytes:
+  //          0x40 - Write DAC register (can use 0x50 if wanting to write to the EEPROM too)
+  //          Upper 8 bits - d11-d10-d9-d9-d7-d6-d5-d4
+  //          Lower 4 bits - d3-d2-d1-d0-0-0-0-0
+  //
+  uint8_t val1 = (dacvalue & 0xf00) >> 8; // Will leave top 4 bits zero = "fast write" command
+  uint8_t val2 = (dacvalue & 0xff);
   i2c_write(val1);
   i2c_write(val2);  
   i2c_stop();

@@ -159,6 +159,7 @@ int numnotes;
 #define FREQ2INC(freq) (freq*4)
 uint16_t accumulator;
 uint16_t frequency;
+uint16_t lastfrequency;
 uint8_t  wave;
 int      wavetype;
 int      playnote;
@@ -203,7 +204,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   if (playnote == pitch) {
-    // This is out note, so turn it off
+    // This is our note, so turn it off
     playnote = 0;
   }
 }
@@ -223,6 +224,7 @@ void setup() {
   wave = 0;
   accumulator = 0;
   frequency = 0;
+  lastfrequency = 0;
 
   // Set a default wavetable to get us started
   wavetype = 0;
@@ -296,15 +298,33 @@ void ddsOutput () {
   PORTD = pd;
   PORTB = pb;
 
+  // Avoid jumps part way through the waveform on change of frequency.
+  // If the frequency changes, reset the accumulator to the start of the wave.
+  if (frequency != lastfrequency) {
+    accumulator = 0;
+  }
+
   // Recall that the accumulator is as 16 bit value, but
   // representing an 8.8 fixed point maths value, so we
   // only need the top 8 bits here.
-  if (frequency == 0) {
+  if ((frequency == 0) && (lastfrequency != 0)) {
+    // Need to turn the generation off, but if we just
+    // stop then we'll get sudden cut-offs which sound
+    // like blips - so at least output something that tends
+    // back to the zero point (128) without the sudden jump.
+    wave = wavetable[accumulator>>8];
+    if (wave > 128) {
+      wave = ((wave-128)/2)+128;
+    } else {
+      wave = ((128-wave)/2)+wave;
+    }
+  } else if (lastfrequency == 0) {
     wave = 0;
   } else {
     wave = wavetable[accumulator>>8];
     accumulator += (FREQ2INC(frequency));
   }
+  lastfrequency = frequency;
 }
 
 // This function will initialise the wavetable

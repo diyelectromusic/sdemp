@@ -112,6 +112,20 @@ void setup(void) {
   tft_rows = tft_h/FONT_Y;
   tft.fillScreen(ST77XX_BLACK);
 
+#ifdef TEST
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setCursor(0,0);
+  tft.print ("W: ");
+  tft.println (tft_w);
+  tft.print ("H: ");
+  tft.println (tft_h);
+  tft.print ("C: ");
+  tft.println (tft_cols);
+  tft.print ("R: ");
+  tft.println (tft_rows);
+  delay(10000);
+#endif
+  
   printInit();
 
   pinMode (MIDI_LED, OUTPUT);
@@ -160,7 +174,7 @@ void printNote (uint8_t note) {
   tft.print((note/12)-1,DEC);
   tft.print(" ");
   col = col+NEXTCOL;
-  if (col >= tft_cols) {
+  if (col+NEXTCOL-1 >= tft_cols) {
     col = 0;
     tft.println();
     row++;

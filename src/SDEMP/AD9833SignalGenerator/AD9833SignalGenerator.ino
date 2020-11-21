@@ -77,7 +77,8 @@ void loop () {
          break;
      }
 
-     // include a short delay so it doesn't trigger straight away
+     // Include a short delay so it doesn't trigger straight away
+     // (this is a crude way of "debouncing" the switch!)
      delay (500);
   }
   lastbtn = btn;
@@ -85,16 +86,12 @@ void loop () {
   // Check the potentiometer for the frequency
   // Pot will return 0 to 1023, so add 30 to give
   // a frequency range of 30 to 1053 Hz
-  // Note: To stop spurious triggers due to inaccuracies in
-  //       the analog reading, we lose some precision here
-  //       by losing the lowest bits of the value.
-  int potval = 30 + ((analogRead (POT)>>3)<<3);
+  // NOTE: This requires a patch to the MD_AD9833.cpp file
+  //       in the library!  See my project webpage for details!
+  int potval = 30 + analogRead (POT);
   if (potval != freq) {
     // Change the frequency of the default channel
     freq = potval;
     AD.setFrequency(MD_AD9833::CHAN_0, freq);
-
-    // short delay again
-    delay (100);
   }
 }

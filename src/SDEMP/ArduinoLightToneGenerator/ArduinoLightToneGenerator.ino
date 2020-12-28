@@ -2,7 +2,7 @@
 // Simple DIY Electronic Music Projects
 //    diyelectromusic.wordpress.com
 //
-//  Arduino Tone Generator
+//  Arduino Light Tone Generator
 //  https://diyelectromusic.wordpress.com/2020/12/28/arduino-light-tone-generator/
 //
       MIT License

@@ -127,7 +127,7 @@ void loop() {
                 } else { digitalWrite(MUX_S3, LOW);
               }
 #endif
-  int potReading = analogRead (A0);
+  int potReading = analogRead (MUX_POT);
 
   // if the reading is zero (or almost zero), turn off any playing note
   if (potReading < MIN_POT_READING) {

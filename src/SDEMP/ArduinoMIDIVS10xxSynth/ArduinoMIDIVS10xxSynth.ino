@@ -49,6 +49,14 @@
 
 //#define TEST 1
 
+// Uncomment to perform a test play of the instruments and drums on power up
+#define SOUND_CHECK 1
+
+// Uncomment this if you have a test LED
+// Note: The LED_BUILTIN for the Uno is on pin 13,
+//       which is used below for the VS1003 link.
+//#define MIDI_LED 6
+
 // This code supports several variants of the VS10xx based shields.
 // Choose the apprppriate one here (and comment out the others).
 //
@@ -75,8 +83,12 @@ extern "C" {
 //                               |   |   |   |  |
 uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 
+// Comment out any of these if not in use
+//#define POT_MIDI  A0 // MIDI control
+//#define POT_VOL   A1 // Volume control
+
 // Channel to link to the potentiometer (1 to 16)
-//#define POT_MIDI_CHANNEL 1
+#define POT_MIDI_CHANNEL 1
 
 #ifdef VS1053_MP3_SHIELD
 // VS1053 Shield pin definitions
@@ -139,6 +151,7 @@ byte preset_instruments[16] = {
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 byte instrument;
+byte volume;
 
 #ifdef TEST
 char teststr[32];
@@ -148,16 +161,25 @@ void setup() {
 #ifdef TEST
   Serial.begin(9600);
   Serial.println ("Initialising VS10xx");
-#endif
+#endif // TEST
 
 #ifdef VS_VCC
   pinMode(VS_VCC, OUTPUT);
   digitalWrite(VS_VCC, HIGH);
-#endif
+#endif // VS_VCC
 #ifdef VS_GND
   pinMode(VS_GND, OUTPUT);
   digitalWrite(VS_GND, LOW);
-#endif
+#endif // VS_GND
+#ifdef MIDI_LED
+  pinMode(MIDI_LED, OUTPUT);
+  // flash the LED on startup
+  for (int i=0; i<4; i++) {
+    digitalWrite(MIDI_LED, HIGH);
+    digitalWrite(MIDI_LED, LOW);
+    delay(50);
+  }
+#endif // MIDI_LED
 
   // put your setup code here, to run once:
   initialiseVS10xx();
@@ -166,16 +188,17 @@ void setup() {
   // They will be filtered out later...
 #ifndef TEST
   MIDI.begin(MIDI_CHANNEL_OMNI);
-#endif
+#endif // TEST
 
   delay(1000);
 
+#ifdef SOUND_CHECK
   // A test "output" to see if the VS0xx is working ok
-#ifdef POT_MIDI_CHANNEL
+#ifdef POT_MIDI
   byte ch = POT_MIDI_CHANNEL-1;
-#else
+#else  // POT_MIDI
   byte ch = 0;
-#endif
+#endif // POT_MIDI
   for (byte i=60; i<73; i++) {
     talkMIDI (0x90|ch, i, 127);
     delay (100);
@@ -188,6 +211,7 @@ void setup() {
     talkMIDI (0x89, i, 0);
     delay (200);    
   }
+#endif // SOUND_CHECK
 
   // Configure the instruments for all required MIDI channels.
   // Even though MIDI channels are 1 to 16, all the code here
@@ -206,6 +230,11 @@ void setup() {
       }
     }
   }
+
+  // Set these invalid to trigger a read of the pots
+  // (if being used) first time through.
+  instrument = -1;
+  volume = -1;
 }
 
 void loop() {
@@ -213,28 +242,52 @@ void loop() {
 
   // Read the potentiometer for a value between 0 and 127
   // to use to select the instrument in the general MIDI bank
-  // for POT_MIDI_CHANNEL (if defined).
-#ifdef POT_MIDI_CHANNEL
-  byte pot = analogRead (A0) >> 3;
-  if (pot != instrument) {
+  // for POT_MIDI_CHANNEL (if POT_MIDI is defined).
+#ifdef POT_MIDI
+  byte pot1 = analogRead (POT_MIDI) >> 3;
+  if (pot1 != instrument) {
     // Change the instrument to play
 #ifdef VS1003_MODULE
     // The VS1003 has a limited set of instruments to choose from
     // So convert 0 to 127 into 0 to VS1003VOICES-1
-    int voice = ((int)pot)/(128/VS1003VOICES);
+    int voice = ((int)pot1)/(128/VS1003VOICES);
     if (voice >= VS1003VOICES) voice = VS1003VOICES-1;
     instrument = vs1003voices[voice];
 #else
-    instrument = pot;
+    instrument = pot1;
 #endif // VS1003_MODULE
     talkMIDI(0xC0 | (POT_MIDI_CHANNEL-1), instrument, 0);
   }
-#endif // POT_MIDI_CHANNEL
+#endif // POT_MIDI
+
+  // Read the potentiometer to set the volume
+  // (if POT_VOL is defined).
+#ifdef POT_VOL
+  // Need a value between 0 and 254 for the volume
+  byte pot2 = analogRead (POT_VOL) >> 2;
+  if (pot2 > 254) pot2 = 254;
+  if (pot2 != volume) {
+    // Set the volume on both channels.
+    //
+    // Note that the volume setting is actually an attenuation
+    // setting, which means the loudest is 0 (no attenuation)
+    // and the quietest is 254 or 0xFE (full attenuation).
+    //
+    // To preserve the "pot at zero, volume at zero" feeling
+    // we reverse the values here.
+    //
+    VSWriteRegister(SCI_VOL, 254-pot2, 254-pot2);
+    volume = pot2;
+  }
+#endif // POT_VOL
 
   // If we have MIDI data then forward it on.
   // Based on the DualMerger.ino example from the MIDI library.
   //
   if (MIDI.read()) {
+#ifdef MIDI_LED
+    digitalWrite(MIDI_LED, HIGH);
+#endif // MIDI_LED
     // Extract the channel and type to build the command to pass on
     // Recall MIDI channels are in the range 1 to 16, but will be
     // encoded as 0 to 15.
@@ -253,6 +306,9 @@ void loop() {
       }
       talkMIDI(cmd, MIDI.getData1(), MIDI.getData2());
     }
+#ifdef MIDI_LED
+    digitalWrite(MIDI_LED, LOW);
+#endif // MIDI_LED
   }
 }
 

@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino MIDI VS10xx Drum Machine
-//  https://diyelectromusic.wordpress.com/2021/01/13/arduino-midi-vs1003-drum-machine/
+//  https://diyelectromusic.wordpress.com/2021/01/13/arduino-vs1003-drum-machine/
 //
       MIT License
       

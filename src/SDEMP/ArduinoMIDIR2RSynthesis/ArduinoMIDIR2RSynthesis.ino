@@ -158,8 +158,10 @@ int numnotes;
 //
 #define FREQ2INC(freq) (freq*4)
 uint16_t accumulator;
+uint16_t lastaccumulator;
 uint16_t frequency;
 uint16_t lastfrequency;
+uint16_t nextfrequency;
 uint8_t  wave;
 int      wavetype;
 int      playnote;
@@ -223,8 +225,10 @@ void setup() {
 
   wave = 0;
   accumulator = 0;
+  lastaccumulator = 0;
   frequency = 0;
   lastfrequency = 0;
+  nextfrequency = 0;
 
   // Set a default wavetable to get us started
   wavetype = 0;
@@ -254,10 +258,10 @@ void loop() {
 
   // Convert the playing note to a frequency
   if (playnote != 0) {
-    frequency = notes[playnote-MIDI_NOTE_START];
+    nextfrequency = notes[playnote-MIDI_NOTE_START];
   } else {
     // turn the sound generation off
-    frequency = 0;
+    nextfrequency = 0;
   }
 
   // Use the second potentiometer to change the wavetype
@@ -299,10 +303,17 @@ void ddsOutput () {
   PORTB = pb;
 
   // Avoid jumps part way through the waveform on change of frequency.
-  // If the frequency changes, reset the accumulator to the start of the wave.
-  if (frequency != lastfrequency) {
+  // Only update the frequency when the accumulator wraps around.
+  if ((accumulator == 0) || (lastaccumulator > accumulator)) {
+    frequency = nextfrequency;
+  } else if (frequency == 0) {
+    // Exception - if the frequency is already zero then
+    // can move to a new frequency straight away as long as we
+    // reset the accumulator.
+    frequency = nextfrequency;
     accumulator = 0;
   }
+  lastaccumulator = accumulator;
 
   // Recall that the accumulator is as 16 bit value, but
   // representing an 8.8 fixed point maths value, so we
@@ -319,7 +330,7 @@ void ddsOutput () {
       wave = ((128-wave)/2)+wave;
     }
   } else if (lastfrequency == 0) {
-    wave = 0;
+    wave = 128;
   } else {
     wave = wavetable[accumulator>>8];
     accumulator += (FREQ2INC(frequency));

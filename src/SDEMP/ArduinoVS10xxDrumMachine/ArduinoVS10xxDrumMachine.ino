@@ -142,7 +142,12 @@ int loopstate;
 // There are four instruments, each controlled by switches in the keypad.
 #define BEATS 4
 #define DRUMS 4
+#ifdef VS1003_MODULE
 byte drums[DRUMS]={VS1003_D_BASS,VS1003_D_SNARE,VS1003_D_HHC,VS1003_D_HHO};
+#endif
+#ifdef VS1053_MP3_SHIELD
+byte drums[DRUMS]={36,38,42,46}; // Bass, Snare, HHO, HHC
+#endif
 byte pattern[BEATS][DRUMS];
 int  seqstep; // index in the pattern 0 to BEATS-1
 
@@ -181,10 +186,10 @@ void setup() {
 
 #ifdef SOUND_CHECK
   // A test "output" to see if the VS0xx is working ok
-  for (byte i=0; i<VS1003DRUMS; i++) {
-    talkMIDI (0x90|(MIDI_CHANNEL-1), vs1003drums[i], 127);
+  for (byte i=0; i<DRUMS; i++) {
+    talkMIDI (0x90|(MIDI_CHANNEL-1), drums[i], 127);
     delay (100);
-    talkMIDI (0x80|(MIDI_CHANNEL-1), vs1003drums[i], 0);
+    talkMIDI (0x80|(MIDI_CHANNEL-1), drums[i], 0);
     delay (200);    
   }
 #endif // SOUND_CHECK
@@ -576,7 +581,7 @@ void VSLoadUserCode(void) {
 #ifdef VS1003_MODULE
   VSWriteRegister16(SCI_AIADDR, 0x30);
 #endif
-#ifdef VS1053_MODULE
+#ifdef VS1053_MP3_SHIELD
   VSWriteRegister16(SCI_AIADDR, 0x50);
 #endif
 

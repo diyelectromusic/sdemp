@@ -576,7 +576,7 @@ void VSLoadUserCode(void) {
 #ifdef VS1003_MODULE
   VSWriteRegister16(SCI_AIADDR, 0x30);
 #endif
-#ifdef VS1053_MODULE
+#ifdef VS1053_MP3_SHIELD
   VSWriteRegister16(SCI_AIADDR, 0x50);
 #endif
 

@@ -4,9 +4,6 @@
 # @diyelectromusic
 # https://diyelectromusic.wordpress.com/
 #
-# @diyelectromusic
-# https://diyelectromusic.wordpress.com/
-#
 #      MIT License
 #      
 #      Copyright (c) 2020 diyelectromusic (Kevin)

@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<museScore>
+      <Genre id="mt32">
+            <name>MT32</name>
+      </Genre>
+      <Family id="mt32">
+            <name>MT-32</name>
+      </Family>
+      <InstrumentGroup id="mt32-woodwinds">
+            <name>MT32 Woodwinds</name>
+            <Instrument id="mt32-piccolo">
+                  <longName>Piccolo (MT32)</longName>
+                  <shortName>Picc.</shortName>
+                  <description>Piccolo Flute</description>
+                  <musicXMLid>wind.flutes.flute.piccolo</musicXMLid>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>G8va</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>74-105</aPitchRange>
+                  <pPitchRange>74-108</pPitchRange>
+                  <transposeDiatonic>7</transposeDiatonic>
+                  <transposeChromatic>12</transposeChromatic>
+                  <Channel>
+                        <program value="74"/> <!--MT32 Piccolo-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-flute">
+                  <longName>Flute (MT32)</longName>
+                  <shortName>Fl.</shortName>
+                  <description>Standard Concert Flute</description>
+                  <musicXMLid>wind.flutes.flute</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>60-93</aPitchRange>
+                  <pPitchRange>59-98</pPitchRange>
+                  <Channel>
+                        <program value="72"/> <!--MT32 Flute-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-pan-flute">
+                  <longName>Pan Flute (MT32)</longName>
+                  <shortName>Pn. Fl.</shortName>
+                  <description>Pan Flute</description>
+                  <musicXMLid>wind.flutes.panpipes</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>60-96</aPitchRange>
+                  <pPitchRange>60-96</pPitchRange>
+                  <Channel>
+                        <program value="77"/> <!--MT32 Pan Pipes-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-recorder">
+                  <longName>Recorder (MT32)</longName>
+                  <shortName>Rec.</shortName>
+                  <description>Recorder</description>
+                  <musicXMLid>wind.flutes.recorder</musicXMLid>
+                  <clef>G8va</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>72-93</aPitchRange>
+                  <pPitchRange>72-98</pPitchRange>
+                  <Channel>
+                        <program value="76"/> <!--MT32 Recorder-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-whistle">
+                  <longName>Tin Whistle (MT-32)</longName>
+                  <shortName>Tin Wh.</shortName>
+                  <description>same as 6 hole Flageolet but metal construction</description>
+                  <musicXMLid>wind.flutes.whistle.tin</musicXMLid>
+                  <clef>G8va</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>72-96</aPitchRange>
+                  <pPitchRange>72-102</pPitchRange>
+                  <Channel>
+                        <program value="108"/> <!--MT32 Whistle-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-oboe">
+                  <family>mt32</family>
+                  <longName>Oboe (MT-32)</longName>
+                  <shortName>Ob.</shortName>
+                  <description>Oboe</description>
+                  <musicXMLid>wind.reed.oboe</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>58-87</aPitchRange>
+                  <pPitchRange>58-96</pPitchRange>
+                  <Channel>
+                        <program value="84"/> <!--MT32 Oboe-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-english-horn">
+                  <longName>English Horn (MT-32)</longName>
+                  <shortName>E. Hn.</shortName>
+                  <description>Cor anglais</description>
+                  <musicXMLid>wind.reed.english-horn</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>52-81</aPitchRange>
+                  <pPitchRange>52-83</pPitchRange>
+                  <transposeDiatonic>-4</transposeDiatonic>
+                  <transposeChromatic>-7</transposeChromatic>
+                  <Channel>
+                        <program value="85"/> <!--MT32 Engl Horn-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-clarinet">
+                  <longName>Clarinet (MT32)</longName>
+                  <shortName>Cl.</shortName>
+                  <description>B♭ Clarinet (generic)</description>
+                  <musicXMLid>wind.reed.clarinet</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>50-89</aPitchRange>
+                  <pPitchRange>50-94</pPitchRange>
+                  <transposeDiatonic>-1</transposeDiatonic>
+                  <transposeChromatic>-2</transposeChromatic>
+                  <Channel>
+                        <program value="82"/> <!--MT32 Clarinet 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-bassoon">
+                  <longName>Bassoon (MT-32)</longName>
+                  <shortName>Bsn.</shortName>
+                  <description>Bassoon</description>
+                  <musicXMLid>wind.reed.bassoon</musicXMLid>
+                  <clef>F</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>34-69</aPitchRange>
+                  <pPitchRange>34-76</pPitchRange>
+                  <Channel>
+                        <program value="86"/> <!--MT32 Bassoon-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-soprano-saxophone">
+                  <longName>Soprano Saxophone (MT-32)</longName>
+                  <shortName>S. Sax.</shortName>
+                  <description>Soprano Saxophone</description>
+                  <musicXMLid>wind.reed.saxophone.soprano</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>56-89</aPitchRange>
+                  <pPitchRange>56-94</pPitchRange>
+                  <transposeDiatonic>-1</transposeDiatonic>
+                  <transposeChromatic>-2</transposeChromatic>
+                  <Channel>
+                        <program value="78"/> <!--MT32 Sax 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-alto-saxophone">
+                  <longName>Alto Saxophone (MT-32)</longName>
+                  <shortName>A. Sax.</shortName>
+                  <description>Alto Saxophone</description>
+                  <musicXMLid>wind.reed.saxophone.alto</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>49-82</aPitchRange>
+                  <pPitchRange>49-87</pPitchRange>
+                  <transposeDiatonic>-5</transposeDiatonic>
+                  <transposeChromatic>-9</transposeChromatic>
+                  <Channel>
+                        <program value="79"/> <!--MT32 Sax 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-tenor-saxophone">
+                  <longName>Tenor Saxophone (MT-32)</longName>
+                  <shortName>T. Sax.</shortName>
+                  <description>Tenor Saxophone</description>
+                  <musicXMLid>wind.reed.saxophone.tenor</musicXMLid>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>G8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>44-77</aPitchRange>
+                  <pPitchRange>44-82</pPitchRange>
+                  <transposeDiatonic>-8</transposeDiatonic>
+                  <transposeChromatic>-14</transposeChromatic>
+                  <Channel>
+                        <program value="80"/> <!--MT32 Sax 3-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-baritone-saxophone">
+                  <longName>Baritone Saxophone (MT-32)</longName>
+                  <shortName>Bar. Sax.</shortName>
+                  <description>Baritone Saxophone</description>
+                  <musicXMLid>wind.reed.saxophone.baritone</musicXMLid>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>F</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>37-70</aPitchRange>
+                  <pPitchRange>36-75</pPitchRange>
+                  <transposeDiatonic>-12</transposeDiatonic>
+                  <transposeChromatic>-21</transposeChromatic>
+                  <Channel>
+                        <program value="81"/> <!--MT32 Sax 4-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-harmonica">
+                  <longName>16 Hole C Chromatic Harmonica (MT-32)</longName>
+                  <shortName>Harm.</shortName>
+                  <description>16 Hole Chromatic Harmonica in C</description>
+                  <musicXMLid>wind.reed.harmonica</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>48-98</aPitchRange>
+                  <pPitchRange>48-98</pPitchRange>
+                  <Channel>
+                        <program value="87"/> <!--MT32 Harmonica-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-accordion">
+                  <longName>Accordion (MT-32)</longName>
+                  <shortName>Acc.</shortName>
+                  <description>Accordion</description>
+                  <musicXMLid>keyboard.accordion</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-93</aPitchRange>
+                  <pPitchRange>36-93</pPitchRange>
+                  <Channel>
+                        <program value="15"/> <!--MT32 Accordion-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-brass">
+            <name>MT32 Brass</name>
+            <Instrument id="mt32-horn">
+                  <longName>Horn in F (MT-32)</longName>
+                  <shortName>F Hn.</shortName>
+                  <description>Horn</description>
+                  <musicXMLid>brass.french-horn</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>41-69</aPitchRange>
+                  <pPitchRange>31-77</pPitchRange>
+                  <transposeDiatonic>-4</transposeDiatonic>
+                  <transposeChromatic>-7</transposeChromatic>
+                  <Channel>
+                        <program value="92"/> <!--MT32 Fr Horn 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-trumpet">
+                  <longName>Trumpet (MT-32)</longName>
+                  <shortName>Tpt.</shortName>
+                  <description>B♭ Trumpet (generic)</description>
+                  <musicXMLid>brass.trumpet</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>52-80</aPitchRange>
+                  <pPitchRange>52-85</pPitchRange>
+                  <transposeDiatonic>-1</transposeDiatonic>
+                  <transposeChromatic>-2</transposeChromatic>
+                  <Channel>
+                        <program value="88"/> <!--MT32 Trumpet 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-trombone">
+                  <longName>Trombone (MT-32)</longName>
+                  <shortName>Tbn.</shortName>
+                  <description>Trombone</description>
+                  <musicXMLid>brass.trombone</musicXMLid>
+                  <clef>F</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>40-71</aPitchRange>
+                  <pPitchRange>36-74</pPitchRange>
+                  <Channel>
+                        <program value="90"/> <!--MT32 Trombone 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-tuba">
+                  <longName>Tuba (MT-32)</longName>
+                  <shortName>Tba.</shortName>
+                  <description>Tuba (generic)</description>
+                  <musicXMLid>brass.tuba</musicXMLid>
+                  <clef>F</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-58</aPitchRange>
+                  <pPitchRange>22-72</pPitchRange>
+                  <Channel>
+                        <program value="94"/> <!--MT32 Tuba-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-pitched-percussion">
+            <name>MT32 Percussion - Pitched</name>
+            <Instrument id="mt32-timpani">
+                  <longName>Timpani (MT-32)</longName>
+                  <shortName>Timp.</shortName>
+                  <description>Timpani</description>
+                  <musicXMLid>drum.timpani</musicXMLid>
+                  <clef>F</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>38-60</aPitchRange>
+                  <pPitchRange>36-62</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="112"/> <!--MT32 Timpani-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-melodic-toms">
+                  <longName>Melodic Toms (MT-32)</longName>
+                  <shortName>Roto</shortName>
+                  <description>Roto-Toms</description>
+                  <musicXMLid>drum.rototom</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>40-76</aPitchRange>
+                  <pPitchRange>40-76</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="113"/> <!--MT32 Melodic Tom-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-glockenspiel">
+                  <longName>Glockenspiel (MT-32)</longName>
+                  <shortName>Glock.</shortName>
+                  <description>Glockenspiel</description>
+                  <musicXMLid>pitched-percussion.glockenspiel</musicXMLid>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>G15ma</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>79-108</aPitchRange>
+                  <pPitchRange>76-108</pPitchRange>
+                  <transposeDiatonic>14</transposeDiatonic>
+                  <transposeChromatic>24</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="101"/> <!--MT32 Glock-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-vibraphone">
+                  <longName>Vibraphone (MT-32)</longName>
+                  <shortName>Vib.</shortName>
+                  <description>Vibraphone</description>
+                  <musicXMLid>pitched-percussion.vibraphone</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>53-89</aPitchRange>
+                  <pPitchRange>48-96</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="97"/> <!--MT32 Vibe 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-tubular-bells">
+                  <longName>Tubular Bells (MT-32)</longName>
+                  <shortName>Cme.</shortName>
+                  <description>Chimes or Tubular Bells</description>
+                  <musicXMLid>pitched-percussion.tubular-bells</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>60-79</aPitchRange>
+                  <pPitchRange>53-79</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="102"/> <!--MT32 Tube Bell-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-musical-glasses">
+                  <longName>Musical Glasses (MT-32)</longName>
+                  <shortName>Mu. Gla.</shortName>
+                  <description>Musical Glasses</description>
+                  <musicXMLid>pitched-percussion.crystal-glasses</musicXMLid>
+                  <clef>G8va</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>72-91</aPitchRange>
+                  <pPitchRange>72-91</pPitchRange>
+                  <Channel>
+                        <program value="35"/> <!--MT32 Glasses-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-xylophone">
+                  <longName>Xylophone (MT-32)</longName>
+                  <shortName>Xyl.</shortName>
+                  <description>Xylophone</description>
+                  <musicXMLid>pitched-percussion.xylophone</musicXMLid>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>G8va</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>65-96</aPitchRange>
+                  <pPitchRange>60-108</pPitchRange>
+                  <transposeDiatonic>7</transposeDiatonic>
+                  <transposeChromatic>12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="103"/> <!--MT32 Xylophone-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-marimba">
+                  <longName>Marimba (MT-32)</longName>
+                  <shortName>Mrm.</shortName>
+                  <description>Marimba (grand staff)</description>
+                  <trackName>Marimba (Grand Staff)</trackName>
+                  <musicXMLid>pitched-percussion.marimba</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>45-96</aPitchRange>
+                  <pPitchRange>36-96</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="104"/> <!--MT32 Marimba-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-vocals">
+            <name>MT32 Vocals</name>
+            <Instrument id="mt32-voice">
+                  <longName>Chorale (MT-32)</longName>
+                  <shortName>Vo.</shortName>
+                  <description>Voice</description>
+                  <musicXMLid>voice.vocals</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>41-79</aPitchRange>
+                  <pPitchRange>38-84</pPitchRange>
+                  <Channel>
+                        <program value="34"/> <!--MT32 Chorale-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-keyboards">
+            <name>MT32 Keyboards</name>
+            <Instrument id="mt32-piano">
+                  <longName>Piano (MT-32)</longName>
+                  <shortName>Pno.</shortName>
+                  <description>Piano</description>
+                  <musicXMLid>keyboard.piano</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>21-108</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="0"/> <!--MT32 Acou Piano 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-grand-piano">
+                  <longName>Grand Piano (MT-32)</longName>
+                  <shortName>Pno.</shortName>
+                  <description>Grand Piano</description>
+                  <musicXMLid>keyboard.piano.grand</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>21-108</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="1"/> <!--MT32 Acou Piano 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-upright-piano">
+                  <longName>Upright Piano (MT-32)</longName>
+                  <shortName>Pno.</shortName>
+                  <description>Piano</description>
+                  <musicXMLid>keyboard.piano.upright</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>21-108</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="2"/> <!--MT32 Acou Piano 3-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-honky-tonk-piano">
+                  <longName>Honky Tonk Piano (MT-32)</longName>
+                  <shortName>Hnk. Pno.</shortName>
+                  <description>Honky Tonk Piano</description>
+                  <musicXMLid>keyboard.piano.honky-tonk</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>21-108</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="7"/> <!--MT32 Honkytonk-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-clavichord">
+                  <longName>Clavichord (MT-32)</longName>
+                  <shortName>Cch.</shortName>
+                  <description>Clavichord</description>
+                  <musicXMLid>keyboard.clavichord</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>29-89</aPitchRange>
+                  <pPitchRange>29-89</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="19"/> <!--MT32 Clavi-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-harpsichord">
+                  <longName>Harpsichord (MT-32)</longName>
+                  <shortName>Hch.</shortName>
+                  <description>Harpsichord</description>
+                  <musicXMLid>keyboard.harpsichord</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>29-89</aPitchRange>
+                  <pPitchRange>29-89</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="16"/> <!--MT32 Harpsi 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-celesta">
+                  <longName>Celesta (MT-32)</longName>
+                  <shortName>Cel.</shortName>
+                  <description>Celesta</description>
+                  <musicXMLid>keyboard.celesta</musicXMLid>
+                  <staves>2</staves>
+                  <transposingClef>G</transposingClef>
+                  <concertClef>G8va</concertClef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <transposingClef staff="2">F</transposingClef>
+                  <concertClef staff="2">F8va</concertClef>
+                  <aPitchRange>48-113</aPitchRange>
+                  <pPitchRange>48-113</pPitchRange>
+                  <transposeDiatonic>7</transposeDiatonic>
+                  <transposeChromatic>12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="22"/> <!--MT32 Celesta 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-electric-piano">
+                  <longName>Electric Piano (MT-32)</longName>
+                  <shortName>El. Pno.</shortName>
+                  <description>Electric Piano</description>
+                  <musicXMLid>keyboard.piano.electric</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>21-108</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="3"/> <!--MT32 Elec Piano 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-organ">
+                  <longName>Organ (MT-32)</longName>
+                  <shortName>Org.</shortName>
+                  <description>Electronic Organ (generic)</description>
+                  <musicXMLid>keyboard.organ</musicXMLid>
+                  <staves>3</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <clef staff="3">F</clef>
+                  <barlineSpan staff="3">1</barlineSpan>
+                  <Channel>
+                        <program value="8"/> <!--MT32 Elec Org 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-percussive-organ">
+                  <longName>Percussive Organ (MT-32)</longName>
+                  <shortName>Perc. Org.</shortName>
+                  <description>Electronic Percussive Organ</description>
+                  <musicXMLid>keyboard.organ.percussive</musicXMLid>
+                  <staves>3</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <clef staff="3">F</clef>
+                  <barlineSpan staff="3">1</barlineSpan>
+                  <Channel>
+                        <program value="9"/> <!--MT32 Elec Org 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-hammond-organ">
+                  <longName>Hammond Organ (MT-32)</longName>
+                  <shortName>Hm. Org.</shortName>
+                  <description>Hammond Electronic Organ</description>
+                  <musicXMLid>keyboard.organ.drawbar</musicXMLid>
+                  <staves>3</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <clef staff="3">F</clef>
+                  <barlineSpan staff="3">1</barlineSpan>
+                  <Channel>
+                        <program value="10"/> <!--MT32 Elec Org 3-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-rotary-organ">
+                  <longName>Rotary Organ (MT-32)</longName>
+                  <shortName>Rot. Org.</shortName>
+                  <description>Electronic Rotary Organ (usually means Hammond with Leslie Speaker)</description>
+                  <musicXMLid>keyboard.organ.rotary</musicXMLid>
+                  <staves>3</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <clef staff="3">F</clef>
+                  <barlineSpan staff="3">1</barlineSpan>
+                  <Channel>
+                        <program value="11"/> <!--MT32 Elec Org 4-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-pipe-organ">
+                  <longName>Pipe Organ (MT-32)</longName>
+                  <shortName>Org.</shortName>
+                  <trackName>Pipe Organ</trackName>
+                  <description>GM Pipe Organ</description>
+                  <musicXMLid>keyboard.organ.pipe</musicXMLid>
+                  <staves>3</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <clef staff="3">F8vb</clef>
+                  <barlineSpan staff="3">1</barlineSpan>
+                  <Channel>
+                        <program value="12"/> <!--MT32 Pipe Org 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-electronic-instruments">
+            <name>MT32 Electronic</name>
+            <Instrument id="mt32-atmosphere-synth">
+                  <longName>Atmosphere Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Atmosphere Effect Synthesizer</description>
+                  <musicXMLid>synth.effects.atmosphere</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="37"/> <!--MT32 Atmosphere-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-echoes-synth">
+                  <longName>Echoes Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Echoes Effect Synthesizer</description>
+                  <musicXMLid>synth.effects.echoes</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="40"/> <!--MT32 Echo Bell-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-rain-synth">
+                  <longName>Rain Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Rain Effect Synthesizer</description>
+                  <musicXMLid>synth.effects.rain</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="41"/> <!--MT32 Ice Rain-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-soundtrack-synth">
+                  <longName>Soundtrack Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Soundtrack Effect Synthesizer</description>
+                  <musicXMLid>synth.effects.soundtrack</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="36"/> <!--MT32 Soundtrack-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-square-synth">
+                  <longName>Square Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Square Wave Synthesizer</description>
+                  <musicXMLid>synth.tone.sine</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="47"/> <!--MT32 Square Wave-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-bass-synthesizer">
+                  <longName>Bass Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Bass Synthesizer</description>
+                  <musicXMLid>pluck.bass.synth</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="28"/> <!--MT32 Syn Bass 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-brass-synthesizer">
+                  <longName>Brass Synthesizer  (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>Brass Synthesizer</description>
+                  <musicXMLid>brass.group.synth</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="24"/> <!--MT32 Syn Brass 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-string-synthesizer">
+                  <longName>String Synthesizer (MT-32)</longName>
+                  <shortName>Synth.</shortName>
+                  <description>String Synthesizer</description>
+                  <musicXMLid>strings.group.synth</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>36-96</aPitchRange>
+                  <pPitchRange>21-108</pPitchRange>
+                  <Channel>
+                        <program value="48"/> <!--MT32 String Sect 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-plucked-strings">
+            <name>MT32 Strings - Plucked</name>
+            <Instrument id="mt32-guitar-nylon">
+                  <longName>Classical Guitar (MT-32)</longName>
+                  <shortName>Guit.</shortName>
+                  <description>Acoustic Nylon-strung Guitar</description>
+                  <musicXMLid>pluck.guitar.nylon-string</musicXMLid>
+                  <StringData>
+                        <frets>19</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                        <string>59</string>
+                        <string>64</string>
+                  </StringData>
+                  <clef>G8vb</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>40-83</aPitchRange>
+                  <pPitchRange>40-83</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="60"/> <!--MT32 Guitar 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-guitar-steel">
+                  <longName>Acoustic Guitar (MT-32)</longName>
+                  <shortName>Guit.</shortName>
+                  <description>Acoustic Steel-strung Guitar</description>
+                  <musicXMLid>pluck.guitar.acoustic</musicXMLid>
+                  <StringData>
+                        <frets>20</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                        <string>59</string>
+                        <string>64</string>
+                  </StringData>
+                  <clef>G8vb</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>40-83</aPitchRange>
+                  <pPitchRange>40-84</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="59"/> <!--MT32 Guitar 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-electric-guitar">
+                  <longName>Electric Guitar (MT-32)</longName>
+                  <shortName>El. Guit.</shortName>
+                  <description>Electric Guitar</description>
+                  <musicXMLid>pluck.guitar.electric</musicXMLid>
+                  <StringData>
+                        <frets>24</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                        <string>59</string>
+                        <string>64</string>
+                  </StringData>
+                  <clef>G8vb</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>40-86</aPitchRange>
+                  <pPitchRange>40-88</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="61"/> <!--MT32 Elec Gtr 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-harp">
+                  <longName>Harp (MT-32)</longName>
+                  <shortName>Hrp.</shortName>
+                  <description>Harp</description>
+                  <musicXMLid>pluck.harp</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <bracket>1</bracket>
+                  <bracketSpan>2</bracketSpan>
+                  <barlineSpan>2</barlineSpan>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>23-104</aPitchRange>
+                  <pPitchRange>23-104</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="57"/> <!--MT32 Harp 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-koto">
+                  <longName>Koto (MT-32)</longName>
+                  <shortName>Ko.</shortName>
+                  <description>Koto</description>
+                  <musicXMLid>pluck.koto</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>43-83</aPitchRange>
+                  <pPitchRange>43-83</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="105"/> <!--MT32 Koto-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-sitar">
+                  <longName>Sitar (MT-32)</longName>
+                  <shortName>Si.</shortName>
+                  <description>Sitar</description>
+                  <musicXMLid>pluck.sitar</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>36-84</aPitchRange>
+                  <pPitchRange>36-84</pPitchRange>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="63"/> <!--MT32 Sitar-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-bass-guitar">
+                  <longName>Bass Guitar (MT-32)</longName>
+                  <shortName>B. Guit.</shortName>
+                  <description>Bass Guitar</description>
+                  <musicXMLid>pluck.bass</musicXMLid>
+                  <StringData>
+                        <frets>24</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                  </StringData>
+                  <transposingClef>F</transposingClef>
+                  <concertClef>F8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-65</aPitchRange>
+                  <pPitchRange>28-67</pPitchRange>
+                  <transposeDiatonic>-7</transposeDiatonic>
+                  <transposeChromatic>-12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="66"/> <!--MT32 Elec Bass 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-acoustic-bass">
+                  <longName>Acoustic Bass (MT-32)</longName>
+                  <shortName>Bass</shortName>
+                  <description>Acoustic Bass</description>
+                  <musicXMLid>pluck.bass.acoustic</musicXMLid>
+                  <StringData>
+                        <frets>24</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                  </StringData>
+                  <transposingClef>F</transposingClef>
+                  <concertClef>F8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-62</aPitchRange>
+                  <pPitchRange>28-67</pPitchRange>
+                  <transposeDiatonic>-7</transposeDiatonic>
+                  <transposeChromatic>-12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="64"/> <!--MT32 Acou Bass 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-electric-bass">
+                  <longName>Electric Bass (MT-32)</longName>
+                  <shortName>El. B.</shortName>
+                  <description>Electric Bass</description>
+                  <musicXMLid>pluck.bass.electric</musicXMLid>
+                  <StringData>
+                        <frets>24</frets>
+                        <string>40</string>
+                        <string>45</string>
+                        <string>50</string>
+                        <string>55</string>
+                  </StringData>
+                  <transposingClef>F</transposingClef>
+                  <concertClef>F8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-65</aPitchRange>
+                  <pPitchRange>28-67</pPitchRange>
+                  <transposeDiatonic>-7</transposeDiatonic>
+                  <transposeChromatic>-12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="67"/> <!--MT32 Elec Bass 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-fretless-electric-bass">
+                  <longName>Fretless Electric Bass (MT-32)</longName>
+                  <shortName>Frtl. El. B.</shortName>
+                  <description>Fretless Electric Bass</description>
+                  <musicXMLid>pluck.bass.fretless</musicXMLid>
+                  <StringData>
+                        <frets>24</frets>
+                        <string>28</string>
+                        <string>33</string>
+                        <string>38</string>
+                        <string>43</string>
+                  </StringData>
+                  <transposingClef>F</transposingClef>
+                  <concertClef>F8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-65</aPitchRange>
+                  <pPitchRange>28-67</pPitchRange>
+                  <transposeDiatonic>-7</transposeDiatonic>
+                  <transposeChromatic>-12</transposeChromatic>
+                  <singleNoteDynamics>0</singleNoteDynamics>
+                  <Channel>
+                        <program value="70"/> <!--MT32 Fretless 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+      <InstrumentGroup id="mt32-strings">
+            <name>MT32 Strings - Bowed</name>
+            <Instrument id="mt32-strings">
+                  <longName>Strings (MT-32)</longName>
+                  <shortName>St.</shortName>
+                  <description>String Section</description>
+                  <musicXMLid>strings.group</musicXMLid>
+                  <staves>2</staves>
+                  <clef>G</clef>
+                  <clef staff="2">F</clef>
+                  <aPitchRange>24-108</aPitchRange>
+                  <pPitchRange>24-108</pPitchRange>
+                  <Channel>
+                        <program value="48"/> <!--MT32 String Sect 1-->
+                  </Channel>
+            </Instrument>
+            <Instrument id="mt32-violin">
+                  <longName>Violin (MT-32)</longName>
+                  <shortName>Vln.</shortName>
+                  <description>Violin</description>
+                  <musicXMLid>strings.violin</musicXMLid>
+                  <clef>G</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>55-88</aPitchRange>
+                  <pPitchRange>55-103</pPitchRange>
+                  <Channel>
+                        <program value="52"/> <!--MT32 Violin 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-viola">
+                  <longName>Viola (MT-32)</longName>
+                  <shortName>Vla.</shortName>
+                  <description>Viola</description>
+                  <musicXMLid>strings.viola</musicXMLid>
+                  <clef>C3</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>48-79</aPitchRange>
+                  <pPitchRange>48-93</pPitchRange>
+                  <Channel>
+                        <program value="53"/> <!--MT32 Violin 2-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-violoncello">
+                  <longName>Violoncello (MT-32)</longName>
+                  <shortName>Vc.</shortName>
+                  <description>Violoncello</description>
+                  <musicXMLid>strings.cello</musicXMLid>
+                  <clef>F</clef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>36-67</aPitchRange>
+                  <pPitchRange>36-90</pPitchRange>
+                  <Channel>
+                        <program value="54"/> <!--MT32 Cello 1-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+            <Instrument id="mt32-contrabass">
+                  <longName>Contrabass (MT-32)</longName>
+                  <shortName>Cb.</shortName>
+                  <description>Contrabass</description>
+                  <musicXMLid>strings.contrabass</musicXMLid>
+                  <transposingClef>F</transposingClef>
+                  <concertClef>F8vb</concertClef>
+                  <barlineSpan>1</barlineSpan>
+                  <aPitchRange>28-62</aPitchRange>
+                  <pPitchRange>24-67</pPitchRange>
+                  <transposeDiatonic>-7</transposeDiatonic>
+                  <transposeChromatic>-12</transposeChromatic>
+                  <Channel>
+                        <program value="56"/> <!--MT32 Contrabass-->
+                  </Channel>
+                  <genre>mt32</genre>
+            </Instrument>
+      </InstrumentGroup>
+</museScore>

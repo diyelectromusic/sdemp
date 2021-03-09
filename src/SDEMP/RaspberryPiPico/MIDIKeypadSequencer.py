@@ -118,7 +118,7 @@ while True:
             step = 0
         
         # And turn off any last notes playing
-        for note in range (NUM_PADS):
+        for note in range (NUM_NOTES):
             noteOff(midiNotes[note])
 
         # Illuminate the new step

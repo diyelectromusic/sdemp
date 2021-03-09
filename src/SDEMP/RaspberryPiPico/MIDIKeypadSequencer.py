@@ -111,14 +111,14 @@ while True:
         lastkey = -1
 
         # Initialise the MIDI Voice
-        progChange(MIDI_VOICE)
+        # progChange(MIDI_VOICE)
 
         step+=1
         if (step >= NUM_PADS):
             step = 0
         
         # And turn off any last notes playing
-        for note in range (NUM_NOTES):
+        for note in range (1, NUM_NOTES):
             noteOff(midiNotes[note])
 
         # Illuminate the new step

@@ -92,7 +92,8 @@ while True:
                 noteGrid[key]+=1
                 if (noteGrid[key] >= NUM_NOTES):
                     noteGrid[key] = 0
-                noteOn(midiNotes[noteGrid[key]])
+                else:
+                    noteOn(midiNotes[noteGrid[key]])
                 lightUp(key)
             keypad.update()
 

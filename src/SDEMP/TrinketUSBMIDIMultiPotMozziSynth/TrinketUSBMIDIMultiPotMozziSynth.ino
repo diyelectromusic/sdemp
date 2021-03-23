@@ -50,7 +50,21 @@
 #include <mozzi_midi.h>
 #include <Smooth.h>
 #include <ADSR.h>
+
+// Uncomment the following to act as a USB Host device.
+// Comment it out to act as a USB device.
+#define USBHnotD 1
+
+#ifdef USBHnotD
+// Uses USB Host Library Transport for the MIDI library
 #include "UHS2-MIDI.h"
+USBHost UsbH;
+UHS2MIDI_CREATE_DEFAULT_INSTANCE(&UsbH);
+#else
+// Uses USB MIDI Transport for the MIDI library
+#include <USB-MIDI.h>
+USBMIDI_CREATE_DEFAULT_INSTANCE();
+#endif
 
 // Set the MIDI Channel to listen on
 #define MIDI_CHANNEL 1
@@ -74,10 +88,6 @@
 #define ADSR_R      200
 #define ADSR_ALVL   255  // Level 0 to 255
 #define ADSR_DLVL   200  // Level 0 to 255
-
-// Initialise the USB host MIDI handling
-USBHost UsbH;
-UHS2MIDI_CREATE_DEFAULT_INSTANCE(&UsbH);
 
 #define CONTROL_RATE 256 // Hz, powers of 2 are most reliable
 
@@ -144,10 +154,12 @@ void setup(){
   potINTS = 500;
   potRATE = 150;
 
+#ifdef USBHnotD
   // USB Host MIDI Initialisation
   if (UsbH.Init() == -1) {
     while (1); // Everything stops if it fails...
   }
+#endif
 
   startMozzi(CONTROL_RATE);
 }
@@ -178,9 +190,10 @@ void setWavetable() {
 }
 
 void updateControl(){
+#ifdef USBHnotD
   // USB Host MIDI Handling
   UsbH.Task();
-
+#endif
   MIDI.read();
 
   // Read the potentiometers - do one on each updateControl scan.

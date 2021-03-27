@@ -97,6 +97,7 @@ Oscil<COS2048_NUM_CELLS, CONTROL_RATE> kIntensityMod(COS2048_DATA);
 
 int wavetable;
 int mod_ratio;
+int mod_rate;
 int carrier_freq;
 long fm_intensity;
 
@@ -141,6 +142,7 @@ void setup(){
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
   MIDI.begin(MIDI_CHANNEL);
 
+  mod_rate = 0;
   wavetable = 0;
   setWavetable();
 
@@ -244,12 +246,18 @@ void updateControl(){
   MIDI.read();
 
   // calculate the fm_intensity
-  fm_intensity = ((long)potINTS * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
+  if (potRATE==0) {
+     fm_intensity = (long)potINTS;
+  } else {
+     fm_intensity = ((long)potINTS * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
+  }
 
   // use a float here for low frequencies
-  float mod_speed = (float)potRATE/100;
-  if (potRATE == 0) mod_speed = 0.0;
-  kIntensityMod.setFreq(mod_speed);
+  if (potRATE != mod_rate) {
+    mod_rate = potRATE;
+    float mod_speed = (float)potRATE/100;
+    kIntensityMod.setFreq(mod_speed);
+  }
 }
 
 

@@ -61,8 +61,12 @@
 #ifdef USBHnotD
 // Uses USB Host Library Transport for the MIDI library
 #include "UHS2-MIDI.h"
+struct MyMIDISettings : public MIDI_NAMESPACE::DefaultSettings {
+  static const bool Use1ByteParsing = false;
+};
 USBHost UsbH;
-UHS2MIDI_CREATE_DEFAULT_INSTANCE(&UsbH);
+UHS2MIDI_NAMESPACE::uhs2MidiTransport usbHMIDI(&UsbH, 0);
+MIDI_NAMESPACE::MidiInterface<UHS2MIDI_NAMESPACE::uhs2MidiTransport, MyMIDISettings> MIDI((UHS2MIDI_NAMESPACE::uhs2MidiTransport&)usbHMIDI);
 #else
 // Uses USB MIDI Transport for the MIDI library
 #include <USB-MIDI.h>
@@ -118,7 +122,7 @@ int playing[NUM_OSC];
 int playidx;
 
 // Comment this out to ignore new notes in polyphonic modes
-//#define POLY_OVERWRITE 1
+#define POLY_OVERWRITE 1
 
 // smoothing for intensity to remove clicks on transitions
 float smoothness = 0.95f;
@@ -253,14 +257,7 @@ void setWavetable() {
 }
 
 void scanMidi () {
-  // We can't use the MIDI library setting to read a whole message in one go,
-  // so instead, call it a few times and return when we have a complete message
-  for (int i=0; i<6; i++) {
-    if (MIDI.read()) {
-      // We have a complete message so process it
-      return;
-    }
-  }
+  MIDI.read();
 }
 
 void scanUsb () {

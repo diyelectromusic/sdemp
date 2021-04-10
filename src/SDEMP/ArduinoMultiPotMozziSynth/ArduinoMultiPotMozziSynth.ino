@@ -51,6 +51,8 @@
 // Set the MIDI Channel to listen on
 #define MIDI_CHANNEL 1
 
+#define POT_ZERO 15 // Anything below this value is treated as "zero"
+
 // Set up the analog inputs - comment out if you aren't using this one
 #define WAVT_PIN 0  // Wavetable
 #define INTS_PIN 1  // FM intensity
@@ -58,13 +60,34 @@
 #define MODR_PIN 3  // Modulation Ratio
 #define AD_A_PIN 4  // ADSR Attack
 #define AD_D_PIN 5  // ADSR Delay
-//#define TEST_NOTE 50 // Comment out to test without MIDI
+
+// Default potentiometer values if no pot defined
+#define DEF_potWAVT 2
+#define DEF_potMODR 5
+#define DEF_potINTS 500
+#define DEF_potRATE 150
+
+// ADSR default parameters in mS
+#define ADSR_A       50
+#define ADSR_D      200
+#define ADSR_S   100000  // Large so the note will sustain unless a noteOff comes
+#define ADSR_R      200
+#define ADSR_ALVL   250  // Level 0 to 255
+#define ADSR_DLVL    64  // Level 0 to 255
+
+//#define TEST_NOTE 50 // Comment out to remove test without MIDI
 //#define DEBUG     1  // Comment out to remove debugging info - can only be used with TEST_NOTE
                        // Note: This will probably cause "clipping" of the audio...
 
 #ifndef TEST_NOTE
-MIDI_CREATE_DEFAULT_INSTANCE();
+struct MySettings : public MIDI_NAMESPACE::DefaultSettings {
+  static const bool Use1ByteParsing = false; // Allow MIDI.read to handle all received data in one go
+  static const long BaudRate = 31250;        // Doesn't build without this...
+};
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial, MIDI, MySettings);
 #endif
+
+#define CONTROL_RATE 256 // Hz, powers of 2 are most reliable
 
 // The original example used AutoMap to calibrate the range of values
 // to be expected from the sensors. However AutoMap is really for use
@@ -91,6 +114,7 @@ Oscil<COS2048_NUM_CELLS, CONTROL_RATE> kIntensityMod(COS2048_DATA);
 
 int wavetable;
 int mod_ratio;
+int mod_rate;
 int carrier_freq;
 long fm_intensity;
 int adsr_a, adsr_d;
@@ -106,7 +130,7 @@ int potWAVT, potMODR, potINTS, potRATE, potAD_A, potAD_D;
 // envelope generator
 ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
 
-#define LED 13 // shows if MIDI is being recieved
+#define LED LED_BUILTIN // shows if MIDI is being recieved
 
 void HandleNoteOn(byte channel, byte note, byte velocity) {
    if (velocity == 0) {
@@ -143,28 +167,23 @@ void setup(){
   MIDI.begin(MIDI_CHANNEL);
 #endif
 
-  adsr_a = 50;
-  adsr_d = 200;
+  adsr_a = ADSR_A;
+  adsr_d = ADSR_D;
   setEnvelope();
 
+  mod_rate = -1;  // Force an update on first control scan...
   wavetable = 0;
   setWavetable();
 
   // Set default parameters for any potentially unused/unread pots
   potcount = 0;
-  potWAVT = 2;
-  potMODR = 5;
-  potINTS = 500;
-  potRATE = 150;
-  potAD_A = 50;
-  potAD_D = 200;
 
-  startMozzi();
+  startMozzi(CONTROL_RATE);
 }
 
 void setEnvelope() {
-  envelope.setADLevels(255, 64);
-  envelope.setTimes(adsr_a, adsr_d, 10000, 200); // 10000 is so the note will sustain 10 seconds unless a noteOff comes
+  envelope.setADLevels(ADSR_ALVL, ADSR_DLVL);
+  envelope.setTimes(adsr_a, adsr_d, ADSR_S, ADSR_R);
 }
 
 void setFreqs(){
@@ -205,31 +224,45 @@ void updateControl(){
   case 0:
 #ifdef WAVT_PIN
     potWAVT = mozziAnalogRead(WAVT_PIN) >> 8; // value is 0-3
+#else
+    potWAVT = DEF_potWAVT;
 #endif
     break;
   case 1:
 #ifdef INTS_PIN
     potINTS = mozziAnalogRead(INTS_PIN); // value is 0-1023
+    if (potINTS<POT_ZERO) potINTS = 0;
+#else
+    potINTS = DEF_potINTS
 #endif
     break;
   case 2:
 #ifdef RATE_PIN
     potRATE = mozziAnalogRead(RATE_PIN); // value is 0-1023
+    if (potRATE<POT_ZERO) potRATE = 0;
+#else
+    potRATE = DEF_potRATE;
 #endif
     break;
   case 3:
 #ifdef MODR_PIN
     potMODR = mozziAnalogRead(MODR_PIN) >> 7; // value is 0-7
+#else
+    potMODR = DEF_potMODR;
 #endif
     break;
   case 4:
 #ifdef AD_A_PIN
     potAD_A = mozziAnalogRead(AD_A_PIN) >> 3; // value is 0-255
+#else
+    potAD_A = ADSR_A;
 #endif
     break;
   case 5:
 #ifdef AD_D_PIN
     potAD_D = mozziAnalogRead(AD_D_PIN) >> 3; // value is 0-255
+#else
+    potAD_D = ADSR_D;
 #endif
     break;
   default:
@@ -270,12 +303,19 @@ void updateControl(){
   envelope.update();
   setFreqs();
 
- // calculate the fm_intensity
-  fm_intensity = ((long)potINTS * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
+  // calculate the fm_intensity
+  if (potRATE==0) {
+     fm_intensity = (long)potINTS;
+  } else {
+     fm_intensity = ((long)potINTS * (kIntensityMod.next()+128))>>8; // shift back to range after 8 bit multiply
+  }
 
   // use a float here for low frequencies
-  float mod_speed = (float)potRATE/100;
-  kIntensityMod.setFreq(mod_speed);
+  if (potRATE != mod_rate) {
+    mod_rate = potRATE;
+    float mod_speed = (float)potRATE/100;
+    kIntensityMod.setFreq(mod_speed);
+  }
 
 #ifdef TEST_NOTE
 #ifdef DEBUG

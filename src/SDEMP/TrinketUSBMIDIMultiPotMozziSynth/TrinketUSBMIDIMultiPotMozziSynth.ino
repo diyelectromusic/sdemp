@@ -75,11 +75,19 @@ USBMIDI_CREATE_DEFAULT_INSTANCE();
 #define ALGREAD mozziAnalogRead
 #endif
 
+#define POT_ZERO 15 // Anything below this value is treated as "zero"
+
 // Set up the analog inputs - comment out if you aren't using this one
 #define WAVT_PIN 3  // Wavetable
 #define INTS_PIN 4  // FM intensity
 #define RATE_PIN 2  // Modulation Rate
 #define MODR_PIN 1  // Modulation Ratio
+
+// Default potentiometer values if no pot defined
+#define DEF_potWAVT 2
+#define DEF_potMODR 5
+#define DEF_potINTS 500
+#define DEF_potRATE 150
 
 // ADSR default parameters in mS
 #define ADSR_A      100
@@ -142,19 +150,14 @@ void setup(){
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
   MIDI.begin(MIDI_CHANNEL);
 
-  mod_rate = 0;
+  mod_rate = -1;  // Force an update on first control scan...
   wavetable = 0;
   setWavetable();
 
   envelope.setADLevels(ADSR_ALVL, ADSR_DLVL);
   envelope.setTimes(ADSR_A, ADSR_D, ADSR_S, ADSR_R);
 
-  // Set default parameters for any potentially unused/unread pots
   potcount = 0;
-  potWAVT = 2;
-  potMODR = 5;
-  potINTS = 500;
-  potRATE = 150;
 
 #ifdef USBHnotD
   // USB Host MIDI Initialisation
@@ -206,21 +209,31 @@ void updateControl(){
   case 0:
 #ifdef WAVT_PIN
     potWAVT = ALGREAD(WAVT_PIN) >> 8; // value is 0-3
+#else
+    potWAVT = DEF_potWAVT;
 #endif
     break;
   case 1:
 #ifdef INTS_PIN
     potINTS = ALGREAD(INTS_PIN); // value is 0-1023
+    if (potINTS<POT_ZERO) potINTS = 0;
+#else
+    potINTS = DEF_potINTS
 #endif
     break;
   case 2:
 #ifdef RATE_PIN
     potRATE = ALGREAD(RATE_PIN); // value is 0-1023
+    if (potRATE<POT_ZERO) potRATE = 0;
+#else
+    potRATE = DEF_potRATE;
 #endif
     break;
   case 3:
 #ifdef MODR_PIN
     potMODR = ALGREAD(MODR_PIN) >> 7; // value is 0-7
+#else
+    potMODR = DEF_potMODR;
 #endif
     break;
  default:

@@ -230,6 +230,9 @@ void setup() {
       }
     }
   }
+  // For some reason, the last program change isn't registered
+  // without an extra "dummy" read here.
+  talkMIDI(0x80, 0, 0);
 
   // Set these invalid to trigger a read of the pots
   // (if being used) first time through.

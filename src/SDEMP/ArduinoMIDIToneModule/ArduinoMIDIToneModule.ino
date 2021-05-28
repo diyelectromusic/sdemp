@@ -41,7 +41,7 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 // Set up the output pin to be used for the speaker
-#define SPEAKER  2
+#define SPEAKER  12
 
 // Set up the MIDI channel to listen on
 #define MIDI_CHANNEL 1

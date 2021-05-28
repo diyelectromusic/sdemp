@@ -41,10 +41,12 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 // Set up the output pin to be used for the speaker
-#define SPEAKER  12
+#define SPEAKER  2
 
 // Set up the MIDI channel to listen on
 #define MIDI_CHANNEL 1
+
+#define MIDI_LED LED_BUILTIN
 
 // Set up the MIDI codes to respond to by listing the lowest note
 #define MIDI_NOTE_START 23   // B0
@@ -63,6 +65,18 @@ int notes[] = {
 };
 int numnotes;
 
+void ledOff () {
+#ifdef MIDI_LED
+   digitalWrite(MIDI_LED, LOW);
+#endif
+}
+
+void ledOn () {
+#ifdef MIDI_LED
+   digitalWrite(MIDI_LED, HIGH);
+#endif
+}
+
 // These are the functions to be called on recieving certain MIDI events.
 // Full documentation of how to do this is provided here:
 // https://github.com/FortySevenEffects/arduino_midi_library/wiki/Using-Callbacks
@@ -80,6 +94,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
     return;
   }
 
+  ledOn();
   tone (SPEAKER, notes[pitch-MIDI_NOTE_START]);
 }
 
@@ -88,9 +103,15 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   // There is no special handling here.
   // If we receive a note off event just turn off all notes.
   noTone(SPEAKER);
+  ledOff();
 }
 
 void setup() {
+#ifdef MIDI_LED
+  pinMode (MIDI_LED, OUTPUT);
+  ledOff();
+#endif
+  
   // Set up the functions to be called on specific MIDI events
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);

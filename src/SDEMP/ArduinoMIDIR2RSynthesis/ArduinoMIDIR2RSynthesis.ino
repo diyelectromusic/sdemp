@@ -160,7 +160,6 @@ int numnotes;
 uint16_t accumulator;
 uint16_t lastaccumulator;
 uint16_t frequency;
-uint16_t lastfrequency;
 uint16_t nextfrequency;
 uint8_t  wave;
 int      wavetype;
@@ -227,7 +226,6 @@ void setup() {
   accumulator = 0;
   lastaccumulator = 0;
   frequency = 0;
-  lastfrequency = 0;
   nextfrequency = 0;
 
   // Set a default wavetable to get us started
@@ -304,38 +302,25 @@ void ddsOutput () {
 
   // Avoid jumps part way through the waveform on change of frequency.
   // Only update the frequency when the accumulator wraps around.
-  if ((accumulator == 0) || (lastaccumulator > accumulator)) {
-    frequency = nextfrequency;
-  } else if (frequency == 0) {
-    // Exception - if the frequency is already zero then
-    // can move to a new frequency straight away as long as we
-    // reset the accumulator.
-    frequency = nextfrequency;
-    accumulator = 0;
+  if (nextfrequency != frequency) {
+    if ((accumulator == 0) || (lastaccumulator > accumulator)) {
+      frequency = nextfrequency;
+      accumulator = 0;
+    } else if (frequency == 0) {
+      // Exception - if the frequency is already zero then
+      // can move to a new frequency straight away as long as we
+      // reset the accumulator.
+      frequency = nextfrequency;
+      accumulator = 0;
+    }
   }
   lastaccumulator = accumulator;
 
   // Recall that the accumulator is as 16 bit value, but
   // representing an 8.8 fixed point maths value, so we
   // only need the top 8 bits here.
-  if ((frequency == 0) && (lastfrequency != 0)) {
-    // Need to turn the generation off, but if we just
-    // stop then we'll get sudden cut-offs which sound
-    // like blips - so at least output something that tends
-    // back to the zero point (128) without the sudden jump.
-    wave = wavetable[accumulator>>8];
-    if (wave > 128) {
-      wave = ((wave-128)/2)+128;
-    } else {
-      wave = ((128-wave)/2)+wave;
-    }
-  } else if (lastfrequency == 0) {
-    wave = 128;
-  } else {
-    wave = wavetable[accumulator>>8];
-    accumulator += (FREQ2INC(frequency));
-  }
-  lastfrequency = frequency;
+  wave = wavetable[accumulator>>8];
+  accumulator += (FREQ2INC(frequency));
 }
 
 // This function will initialise the wavetable

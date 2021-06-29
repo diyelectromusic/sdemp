@@ -52,7 +52,7 @@ keypad.set_brightness(1.0)
 NUM_NOTES = len(midiNotes1)
 NUM_PADS = keypad.get_num_pads()
 NUM_STEPS = 4
-NUM_COLS  = NUM_PADS/NUM_STEPS
+NUM_ROWS  = NUM_PADS/NUM_STEPS
 
 noteGrid = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 last_button_states = 0
@@ -105,8 +105,8 @@ while True:
         # Initialise the MIDI Voice
         progChange(MIDI_VOICE)
         
-        for col in range (NUM_COLS):
-            keystep = step + col*NUM_STEPS
+        for row in range (NUM_ROWS):
+            keystep = step + row*NUM_STEPS
             if (noteGrid[keystep] == 0):
                 lightOff(keystep)
 
@@ -122,8 +122,8 @@ while True:
             noteOff(midiNotes4[note])
 
         # Now process each "column" step
-        for col in range (NUM_COLS):
-            keystep = step + col*NUM_STEPS
+        for row in range (NUM_ROWS):
+            keystep = step + row*NUM_STEPS
             if (noteGrid[keystep] == 0):
                 keypad.illuminate(keystep, 2,2,2)
             else:
@@ -131,11 +131,11 @@ while True:
 
             # Play any notes
             if (noteGrid[keystep] != 0):
-                if (col == 0):
+                if (row == 0):
                     noteOn(midiNotes1[step])
-                elif (col == 1):
+                elif (row == 1):
                     noteOn(midiNotes2[step])
-                elif (col == 2):
+                elif (row == 2):
                     noteOn(midiNotes3[step])
-                elif (col == 3):
+                elif (row == 3):
                     noteOn(midiNotes4[step])

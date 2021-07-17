@@ -180,9 +180,9 @@ void HandleNoteOff(byte channel, byte note, byte velocity) {
 
 int keypadAnalogRead (int pin) {
   // The keypad returns values between ~480 and 1023
-  // so need to scale appropriately here to full range
+  // so need to scale appropriately here to full range.
   int val = mozziAnalogRead(pin);
-  return map (val, 460, 1023, 0, 1023);
+  return map (constrain(val, 460, 1023), 460, 1023, 0, 1023);
 }
 
 void setup(){

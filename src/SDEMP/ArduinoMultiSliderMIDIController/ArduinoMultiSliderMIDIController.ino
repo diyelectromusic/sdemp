@@ -126,7 +126,7 @@ void loop() {
 #ifdef TEST
     Serial.print(pot);
     Serial.print(" CC 0x");
-    if (cc[i]<16) Serial.print("0");
+    if (cc[pot]<16) Serial.print("0");
     Serial.print(cc[pot],HEX);
     Serial.print(" -> ");
     Serial.println(val);

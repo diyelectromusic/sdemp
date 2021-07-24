@@ -39,6 +39,7 @@
 //#define TEST 1
 //#define DBGMIDI 1
 //#define DBGALG  1
+//#define DBGTICK 1
 
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the Arduino built-in serial port
@@ -54,7 +55,8 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 uint16_t trackcnt[NUMTRACKS];
 uint16_t trackmax[NUMTRACKS];
 int tracksteps[NUMTRACKS];
-#define SKIPTRACK 0xFFFF
+int tracklast[NUMTRACKS];
+#define SKIPTRACK 0xFF
 
 #define NUMSTEPS 8
 int stepnotes[NUMSTEPS];
@@ -159,37 +161,71 @@ void doTick () {
   //   Compare it with the timeout value.
   //   If timed out, toggle the step.
   for (int i=0; i<NUMTRACKS; i++) {
-    if (trackmax[i] != SKIPTRACK) {
+    if (trackmax[i] == SKIPTRACK) {
+      // Stop any existing playing note
+      if (tracklast[i] != SKIPTRACK) {
+        stopStep(i, tracklast[i]);
+        tracklast[i] = SKIPTRACK;
+
+        // Clear counters/steps ready for next time
+        trackcnt[i] = 0;
+        tracksteps[i] = 0;
+      }
+    } else {
       trackcnt[i]++;
       if (trackcnt[i] >= trackmax[i]) {
         trackcnt[i] = 0;
 
         // Update the step counter for this track and play the next note
-        int laststep = tracksteps[i];
         tracksteps[i]++;
         if (tracksteps[i] >= NUMSTEPS) {
           tracksteps[i] = 0;
         }
-        playStep(i, laststep, tracksteps[i]);
+        tracklast[i] = tracksteps[i];
+        playStep(i, tracklast[i], tracksteps[i]);
       }
     }
   }
+#ifdef TEST
+#ifdef DBGTICK
+  Serial.print("Max: ");
+  for (int i=0; i<NUMTRACKS; i++) {
+    Serial.print(trackmax[i]);
+    Serial.print("\t");
+  }
+  Serial.print("   Count: ");
+  for (int i=0; i<NUMTRACKS; i++) {
+    Serial.print(trackcnt[i]);
+    Serial.print("\t");
+  }
+  Serial.print("\n");
+#endif
+#endif
+}
+
+void stopStep (int track, int laststep) {
+  if (laststep == SKIPTRACK) {
+    return;
+  }
+
+  byte lastnote = stepnotes[laststep] + modifier[track];
+#ifndef TEST
+  MIDI.sendNoteOff(lastnote, 0, MIDI_CHANNEL);
+#endif
 }
 
 void playStep (int track, int laststep, int nextstep) {
   // There is an optional modifier for each track to
   // allow for different effects, so need to add that
   // here before playing the note...
-  byte lastnote = stepnotes[laststep] + modifier[track];
-  byte nextnote  = stepnotes[nextstep] + modifier[track];
-  
+  byte nextnote = stepnotes[nextstep] + modifier[track];
+  stopStep (track, laststep);
+
 #ifdef TEST
 #ifdef DBGMIDI
   Serial.print(track);
   Serial.print(": OFF: ");
   Serial.print(laststep);
-  Serial.print(" -> ");
-  Serial.print(lastnote);
   Serial.print("  ON: ");
   Serial.print(nextstep);
   Serial.print(" -> ");
@@ -197,7 +233,6 @@ void playStep (int track, int laststep, int nextstep) {
   Serial.print("\n");
 #endif
 #else
-  MIDI.sendNoteOff(lastnote, 0, MIDI_CHANNEL);
   MIDI.sendNoteOn(nextnote, 127, MIDI_CHANNEL);
 #endif
 }

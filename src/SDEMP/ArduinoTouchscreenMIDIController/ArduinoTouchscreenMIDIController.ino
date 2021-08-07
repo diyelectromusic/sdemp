@@ -138,10 +138,10 @@ void gfxLoop() {
   }
 }
 
-// Translate btn number into a 4x4 matrix of on-screen buttons.
+// Translate btn number into a 6x6 matrix of on-screen buttons.
 //
 // Assuming a 320x480 display in landscape mode.
-// For a 4x4 grid of buttons, following "design"
+// For a 6x6 grid of buttons, following "design"
 // is being used:
 //   Radius of buttons 20px, so total 240px is buttons.
 //   Gap between buttons is 10px or 20px, so total of 50px or 100px between buttons.

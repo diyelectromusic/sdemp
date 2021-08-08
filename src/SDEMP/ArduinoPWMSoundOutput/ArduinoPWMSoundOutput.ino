@@ -69,7 +69,7 @@
 // discussed above, but with several pre-set constant values.
 //
 // As we are using constant values involving 256 and a sample
-// rate of 31250Hz it is very convenient to pre-calculate the
+// rate of 32768 it is very convenient to pre-calculate the
 // values to be used in the frequency to increment calculation,
 // especially making use of the 8.8 fixed point maths we've already mentioned.
 //

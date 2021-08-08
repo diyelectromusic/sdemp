@@ -44,6 +44,10 @@
 //   3 Square
 #define WAVE 0
 
+// Uncomment out the statement for the PWM output you want - pin 3 or 9
+#define PIN_9_PWM_OUTPUT 1   // Uses TImer 1
+//#define PIN_3_PWM_OUTPUT 1   // Uses Timer 2
+
 // Direct Digital Synthesis relies on an "accumulator" to index
 // into a wavetable to read out samples for writing to the audio
 // output circuitry.
@@ -87,11 +91,8 @@
 //
 #define FREQ2INC(freq) (freq*2)
 uint16_t accumulator;
-uint16_t lastaccumulator;
 uint16_t frequency;
-uint16_t nextfrequency;
 uint8_t  wave;
-int      playnote;
 
 //NOTE: If you change the size of the wavetable, then the setWavetable
 //      function will need re-writing.
@@ -112,7 +113,7 @@ const unsigned char PROGMEM sinetable[128] = {
   245, 246, 248, 249, 250, 250, 251, 252, 253, 253, 254, 254, 254, 255, 255, 255,
 };
 
-
+#ifdef PIN_9_PWM_OUTPUT
 void initPwm() {
   // Initialise Timer 1 as follows:
   //    Output on pin 9 (OC1A).
@@ -151,6 +152,58 @@ void setPwm (uint8_t pwmval) {
 ISR(TIMER1_OVF_vect) {
   ddsOutput();
 }
+#endif
+
+#ifdef PIN_3_PWM_OUTPUT
+void initPwm() {
+  // Initialise Timer 2 as follows:
+  //    Output on pin 3 (OC2B).
+  //    Run at CPU clock speed (16MHz).
+  //    Use FastPWM mode (count up, then reset).
+  //    Use OC2A as the TOP value.
+  //    TOP value = (clock / (prescaler * 65536)) - 1 = 243
+  //    PWM value is updated by writing to OCR2B
+  //    Interrupt enabled for overflow: TIMER2_OVF_vect
+  //
+  // NB: Need 65536Hz PWM frequency to keep the counter
+  //     value in the range of an 8-bit timer.
+  //     However, we only do the sample every two ticks of the timer.
+  //
+  // So set up PWM for Timer 2, Output B:
+  //   WGM2[2:0] = 111 = FastPWM; OCR2A as TOP; TOV1 set at BOTTOM
+  //   COM2A[1:0] = 00 = OC2A disconnected
+  //   COM2B[1:0] = 10  Clear OC2B on cmp match up; Set OC2B at cmp match down
+  //   CS2[2:0] = 001 = No prescalar
+  //   TOIE2 = Timer/Counter 2 Overflow Interrupt Enable
+  //
+  pinMode(3, OUTPUT);
+  TCCR2A = _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
+  TCCR2B = _BV(WGM22) | _BV(CS20);
+  OCR2A = 243;
+
+  // Check PWM output is active
+  OCR2B = 243/4;
+
+  // 5 seconds wait to output test PWM signal before enabling the interrupts
+  delay (5000);
+
+  TIMSK2 = _BV(TOIE2);
+}
+
+void setPwm (uint8_t pwmval) {
+  OCR2B = pwmval;
+}
+
+int irqtoggle;
+ISR(TIMER2_OVF_vect) {
+  if (irqtoggle) {
+    ddsOutput();
+    irqtoggle = 0;
+  } else {
+    irqtoggle = 1;
+  }
+}
+#endif
 
 void setup() {
   // Set up the wavetable
@@ -166,17 +219,15 @@ void setup() {
 
   wave = 0;
   accumulator = 0;
-  lastaccumulator = 0;
-  frequency = 0;
-
-  nextfrequency = 440;
+  frequency = 440;
+  
   delay(5000); // 5 seconds to output a test 440Hz tone ("concert A").
 }
 
 void loop() {
   // Use an analog input to set the frequency.
   // This will choose a frequency between 220 (A3) and 1243 Hz (approx D#6).
-  nextfrequency = 220+analogRead(FREQPOT);
+  frequency = 220+analogRead(FREQPOT);
 }
 
 // This is the code that is run on every "tick" of the timer.
@@ -184,22 +235,6 @@ void ddsOutput () {
   // Output the last calculated value first to reduce "jitter"
   // then go on to calculate the next value to be used.
   setPwm(wave);
-
-  // Avoid jumps part way through the waveform on change of frequency.
-  // Only update the frequency when the accumulator wraps around.
-  if (nextfrequency != frequency) {
-    if ((accumulator == 0) || (lastaccumulator > accumulator)) {
-      frequency = nextfrequency;
-      accumulator = 0;
-    } else if (frequency == 0) {
-      // Exception - if the frequency is already zero then
-      // can move to a new frequency straight away as long as we
-      // reset the accumulator.
-      frequency = nextfrequency;
-      accumulator = 0;
-    }
-  }
-  lastaccumulator = accumulator;
 
   // Recall that the accumulator is as 16 bit value, but
   // representing an 8.8 fixed point maths value, so we

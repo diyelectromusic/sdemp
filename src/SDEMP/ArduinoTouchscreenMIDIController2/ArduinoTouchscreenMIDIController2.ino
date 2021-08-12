@@ -248,7 +248,7 @@ int y2val (int yc) {
   if (yc > t_max) yc = t_max;
 
   long t_h = t_max-t_min;
-  int retval = (int)(((long)yc - (long)t_min)*1024L/t_h);
+  int retval = (int)(((long)yc - (long)t_min)*1023L/t_h);
 #ifdef MTEST
   Serial.print("y2val: ");
   Serial.print(yc);

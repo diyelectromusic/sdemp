@@ -188,9 +188,9 @@ void gfxBtnOn (int btn) {
 }
 
 int btn2xc (int btn) {
-  // Need remainder after dividing by the number of rows,
+  // Need remainder after dividing by the number of columns,
   // which will give us the position within the row.
-  return BTN_X_MIN+(BTN_X_GAP+2*BTN_RAD)*(btn % NUMBTNSROW);
+  return BTN_X_MIN+(BTN_X_GAP+2*BTN_RAD)*(btn % NUMBTNSCOL);
 }
 
 int btn2yc (int btn) {

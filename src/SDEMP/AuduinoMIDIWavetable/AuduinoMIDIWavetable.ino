@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Auduino MIDI Wavetable
-//  
+//  https://diyelectromusic.wordpress.com/2021/08/18/auduino-wavetable-granular-synthesis/
 //
 //  Dec 2020: Update to add an optional volume control on A5.
 //  Jul 2021: Update to add MIDI.

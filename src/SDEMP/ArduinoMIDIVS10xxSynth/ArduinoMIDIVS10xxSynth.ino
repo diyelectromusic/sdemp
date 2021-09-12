@@ -57,9 +57,6 @@
 //       which is used below for the VS1003 link.
 #define MIDI_LED 4
 
-// Uncomment this to pass SysEx messages across to the VS10xx
-//#define DOSYSEX 1
-
 // This code supports several variants of the VS10xx based shields.
 // Choose the apprppriate one here (and comment out the others).
 //
@@ -304,11 +301,7 @@ void loop() {
     // 
     byte ch = MIDI.getChannel();
     uint16_t ch_filter = 1<<(ch-1);  // bit numbers are 0 to 15; channels are 1 to 16
-#ifdef DOSYSEX
-    if (ch == 0) ch_filter = 0xffff; // special case - always pass system messages where ch==0
-#else
     if (ch == 0) ch_filter = 0; // special case - always ignore system messages where ch==0
-#endif
     if (MIDI_CHANNEL_FILTER & ch_filter) {
       byte cmd = MIDI.getType();
       if ((cmd >= 0x80) && (cmd <= 0xE0)) {
@@ -350,6 +343,7 @@ void talkMIDI(byte cmd, byte data1, byte data2) {
   
   //Some commands only have one data byte. All cmds less than 0xBn have 2 data bytes 
   //(sort of: http://253.ccarh.org/handout/midiprotocol/)
+  // SysEx messages (0xF0 onwards) are variable length but not supported at present!
   if( (cmd & 0xF0) <= 0xB0 || (cmd & 0xF0) >= 0xE0) {
     sendMIDI(data1);
     sendMIDI(data2);

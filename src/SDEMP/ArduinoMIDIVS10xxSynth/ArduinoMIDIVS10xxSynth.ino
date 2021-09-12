@@ -55,13 +55,16 @@
 // Uncomment this if you have a test LED
 // Note: The LED_BUILTIN for the Uno is on pin 13,
 //       which is used below for the VS1003 link.
-//#define MIDI_LED 6
+#define MIDI_LED 4
+
+// Uncomment this to pass SysEx messages across to the VS10xx
+//#define DOSYSEX 1
 
 // This code supports several variants of the VS10xx based shields.
 // Choose the apprppriate one here (and comment out the others).
 //
-//#define VS1053_MP3_SHIELD 1
-#define VS1003_MODULE 1
+#define VS1053_MP3_SHIELD 1
+//#define VS1003_MODULE 1
 
 #ifdef VS1003_MODULE
 extern "C" {
@@ -88,7 +91,7 @@ uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 //#define POT_VOL   A1 // Volume control
 
 // Channel to link to the potentiometer (1 to 16)
-#define POT_MIDI_CHANNEL 1
+//#define POT_MIDI_CHANNEL 1
 
 #ifdef VS1053_MP3_SHIELD
 // VS1053 Shield pin definitions
@@ -143,7 +146,7 @@ byte preset_instruments[16] = {
 /* 13 */  81,
 /* 14 */  89,
 /* 15 */  113,
-/* 16 */  125
+/* 16 */  48
 };
 
 // This is required to set up the MIDI library.
@@ -176,8 +179,9 @@ void setup() {
   // flash the LED on startup
   for (int i=0; i<4; i++) {
     digitalWrite(MIDI_LED, HIGH);
+    delay(100);
     digitalWrite(MIDI_LED, LOW);
-    delay(50);
+    delay(100);
   }
 #endif // MIDI_LED
 
@@ -300,7 +304,11 @@ void loop() {
     // 
     byte ch = MIDI.getChannel();
     uint16_t ch_filter = 1<<(ch-1);  // bit numbers are 0 to 15; channels are 1 to 16
+#ifdef DOSYSEX
     if (ch == 0) ch_filter = 0xffff; // special case - always pass system messages where ch==0
+#else
+    if (ch == 0) ch_filter = 0; // special case - always ignore system messages where ch==0
+#endif
     if (MIDI_CHANNEL_FILTER & ch_filter) {
       byte cmd = MIDI.getType();
       if ((cmd >= 0x80) && (cmd <= 0xE0)) {

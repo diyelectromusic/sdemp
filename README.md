@@ -12,9 +12,9 @@ If you like what you see, you can buy me a Ko-Fi - https://ko-fi.com/diyelectrom
 
 #  A Word of Caution!
 
-Be particularly wary about plugging any of these circuits described in these projectss into your expensive computers, audio, musical or electronic equipment - do so at your own risk! And make sure you double check everything first.
+Be particularly wary about plugging any of these circuits described in these projects into your expensive computers, audio, musical or electronic equipment - I don't recommend it so you do so at your own risk! And make sure you double check everything first regardless. My background is embedded software and music, not electronics, so any electronics information I present is on a "well, I found it somewhere on the Internet and it sort of works for me" basis only!
 
-An old, second-hand or hand-me-down music keyboard or computer is well worth the investment for experimenting.
+An old, second-hand or hand-me-down music keyboard, computer and amplification are well worth the investment for experimenting - that is what I use for everything.
 
 # License
 

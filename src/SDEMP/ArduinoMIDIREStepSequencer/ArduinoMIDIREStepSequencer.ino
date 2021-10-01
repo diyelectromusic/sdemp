@@ -47,6 +47,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 int curstep;
 byte lastnote;
 int tempo;
+#define NO_NOTE 0xFF
 
 // Tempo in beats per minute
 #define TEMPO_STEP    2  // change per "click" of the encoder
@@ -253,8 +254,12 @@ void scanDisplay() {
 
 void setup() {
   curstep = 0;
-  lastnote = -1;
+  lastnote = NO_NOTE;
   tempo = TEMPO_START;
+
+  for (int i=0; i<NUM_STEPS; i++) {
+    steps[i] = 0;  // All start silent
+  }
 
   initEncoder();
   initDisplay();
@@ -293,9 +298,9 @@ void loop() {
   }
 
   // If we are already playing a note then we need to turn it off first
-  if (lastnote != -1) {
-      MIDI.sendNoteOff(steps[lastnote], 0, MIDI_CHANNEL);
-      lastnote = -1;
+  if (lastnote != NO_NOTE) {
+      MIDI.sendNoteOff(lastnote, 0, MIDI_CHANNEL);
+      lastnote = NO_NOTE;
   }
 
   if (steps[curstep] != 0) {

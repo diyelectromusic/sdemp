@@ -182,6 +182,13 @@ void resetEncoder() {
 }
 
 void initEncoder() {
+#ifdef RE_VCC
+  pinMode(RE_VCC, OUTPUT);
+  pinMode(RE_GND, OUTPUT);
+  digitalWrite(RE_GND, LOW);
+  digitalWrite(RE_VCC, HIGH);
+#endif
+
   // Initialise the encoder switch.
   // Everything else is done in the constructor for the enc object.
   pinMode(RE_SW, INPUT_PULLUP);
@@ -237,13 +244,6 @@ void initDisplay() {
   PORTD = 0; // Everything starts LOW
 
   leds = 0;
-
-#ifdef RE_VCC
-  pinMode(RE_VCC, OUTPUT);
-  pinMode(RE_GND, OUTPUT);
-  digitalWrite(RE_GND, LOW);
-  digitalWrite(RE_VCC, HIGH);
-#endif
 }
 
 void scanDisplay() {

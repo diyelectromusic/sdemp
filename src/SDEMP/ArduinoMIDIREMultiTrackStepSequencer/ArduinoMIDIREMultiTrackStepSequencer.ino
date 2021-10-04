@@ -36,14 +36,33 @@
 #include <RotaryEncoder.h>
 #include <Adafruit_NeoPixel.h>
 
+// Various combinations of STEPs and TRACKs are possible and they can
+// be mapped onto LEDs in different ways.  Some examples:
+//   LEDS = NUM_STEPS x NUM_TRACKS could be used for a NUM_STEPS x NUM_TRACKS grid of LEDs.
+//   LEDS = NUM_STEPS could be used if multiple tracks are represented by different
+//          colours re-using the same set of LEDs.
+//   LEDS = NUM_STEPS / 2 if there are more steps than LEDs and the LEDs are used twice
+//          for each track.
+// ... and so on.  These would probably work best when the NUM_LEDS is either a
+// multiple or integer fraction of the other parameters.
+//
+// In theory it should be possible to re-use LEDs for both steps and tracks, but
+// I'm really not sure I could recommend it!
+//
+// If re-using LEDs for tracks, then you really have to set up the ledStepOn[][]
+// array of colours to make each track a different colour, otherwise things will
+// get very confusing very quickly...
+//
 #define NUM_STEPS    6
 #define NUM_TRACKS   2
+#define NUM_LEDS     (NUM_STEPS*NUM_TRACKS)  // LEDs to cover both steps and tracks
+//#define NUM_LEDS     NUM_STEPS               // If all tracks share same LEDs
+//#define NUM_LEDS     (NUM_STEPS/2)           // If have twice as many steps as LEDs
 
 // Definitions for the NeoPixels
 #define LED_PIN   6
-#define LED_COUNT (NUM_STEPS*NUM_TRACKS)
 // See the Adafruit_NeoPixel library examples and tutorials for details
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // Define various colours to be used as "red,green,blue" triplets
 #define LED_STEP_OFF  strip.Color(0,0,0)
@@ -279,7 +298,7 @@ void initDisplay() {
   strip.setBrightness(20); // Set BRIGHTNESS fairly low to keep current usage low
 }
 
-uint32_t note2led (byte note) {
+uint32_t note2rgb (byte note) {
   if (note != 0) {
     // Use the Hue value (0 to 65535) scaled by the MIDI note
     return strip.ColorHSV(map(note, MIN_NOTE, MAX_NOTE, 0, 65535));
@@ -288,7 +307,7 @@ uint32_t note2led (byte note) {
   }
 }
 
-uint32_t track2led (int track) {
+uint32_t track2rgb (int track) {
 #ifdef LED_STEP_ON
   return LED_STEP_ON;
 #else
@@ -298,33 +317,44 @@ uint32_t track2led (int track) {
 }
 
 // Convert a track and step position into an LED position
-#define Step2LedIdx(st,tr) (st+(NUM_STEPS*tr))
+// This allows for overlapping use of LEDS, e.g. to superimpose
+// several tracks on a single strip of LEDs, or to have
+// more steps then LEDs, etc.
+#define Step2LedIdx(st,tr) ((st+(NUM_STEPS*tr))%NUM_LEDS)
+
 void scanDisplay() {
   // What the display shows will depend on the encoder mode!
   strip.clear();
   if (encmode==3) {
     // Note display - show colour based on the current note and current track
     if (steps[enctrack][encstep] != 0) {
-      strip.setPixelColor(Step2LedIdx(encstep,enctrack), note2led(steps[enctrack][encstep]));
+      strip.setPixelColor(Step2LedIdx(encstep,enctrack), note2rgb(steps[enctrack][encstep]));
     } else {
       //  This step is "off"
       strip.setPixelColor(Step2LedIdx(encstep,enctrack), LED_STEP_OFF);
     }
   } else if (encmode==2) {
     // Step display - just highlight the current step for the current track
-    strip.setPixelColor(Step2LedIdx(encstep,enctrack), track2led(enctrack));
+    strip.setPixelColor(Step2LedIdx(encstep,enctrack), track2rgb(enctrack));
   } else if (encmode==1) {
     // Track display - highlight the current track start and end LEDs
-    strip.setPixelColor(Step2LedIdx(0,enctrack), track2led(enctrack));
-    strip.setPixelColor(Step2LedIdx(NUM_STEPS-1,enctrack), track2led(enctrack));
+    strip.setPixelColor(Step2LedIdx(0,enctrack), track2rgb(enctrack));
+    strip.setPixelColor(Step2LedIdx(NUM_STEPS-1,enctrack), track2rgb(enctrack));
   } else {
     // Play mode - play all tracks
     for (int t=0; t<NUM_TRACKS; t++ ){
       if (steps[t][curstep] != 0) {
         // Choose the colour based on the note to be played
-        strip.setPixelColor(Step2LedIdx(curstep,t), note2led(steps[t][curstep]));
+        strip.setPixelColor(Step2LedIdx(curstep,t), note2rgb(steps[t][curstep]));
       } else {
-        strip.setPixelColor(Step2LedIdx(curstep,t), LED_PLAY_OFF);
+        // Check existing colour isn't already set.  If we are using
+        // overlapping tracks/LEDs then we don't want to override
+        // a set pixel with an OFF pixel.
+        // If we do have overlapping tracks, then the last track
+        // with an ON pixel will be shown.
+        if (strip.getPixelColor(Step2LedIdx(curstep,t)) == 0) {
+          strip.setPixelColor(Step2LedIdx(curstep,t), LED_PLAY_OFF);
+        }
       }
     }
   }

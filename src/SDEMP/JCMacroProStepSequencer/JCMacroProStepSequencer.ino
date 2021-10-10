@@ -513,7 +513,7 @@ void loop() {
     curstep++;
   } else if (seqMode == 1) {
     // Reverse play mode
-    if (curstep >= 0) {
+    if (curstep > 0) {
       curstep--;      
     } else {
       curstep = NUM_STEPS-1;

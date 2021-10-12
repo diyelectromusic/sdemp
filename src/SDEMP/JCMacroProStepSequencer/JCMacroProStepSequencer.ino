@@ -30,9 +30,17 @@
    Example code for the JC Macro Pro: 
 */
 #include <MIDI.h>
-#include <USB-MIDI.h>
 #include <RotaryEncoder.h>
 #include <Adafruit_NeoPixel.h>
+
+// Uncomment the following to use SoftwareSerial MIDI on the IO pins instead of USB MIDI
+//#define SWSERIAL_MIDI 1
+
+#ifdef SWSERIAL_MIDI
+#include <SoftwareSerial.h>
+#else
+#include <USB-MIDI.h>
+#endif
 
 //#define TEST 1  // Uncomment to disable MIDI and print to default Serial
 //#define TEST_HW 1 // This is a test configuration for prototype hardware!
@@ -75,9 +83,22 @@ const byte ledStepOn[NUM_TRACKS][3]={
 #define LED_MIDI_CTRL strip.Color(100,100,100)
 
 // This is required to set up the MIDI library.
+#ifdef SWSERIAL_MIDI
 // The default MIDI setup uses the Arduino built-in serial port
-// which is pin 1 for transmitting on the Arduino Uno.
-MIDI_CREATE_DEFAULT_INSTANCE();
+// which is pin 1 for transmitting on the Arduino Uno, but we can't
+// use that with the JC Pro Macro 2 as pins 0 and 1 are used for the encoder.
+// So this will use the SoftwareSerial library instead.
+// This is taken from "AltPinSerial" example in the Arduino MIDI Library.
+#define MIDI_RX_PIN 6
+#define MIDI_TX_PIN 7
+using Transport = MIDI_NAMESPACE::SerialMIDI<SoftwareSerial>;
+SoftwareSerial swSerial = SoftwareSerial(MIDI_RX_PIN, MIDI_TX_PIN);
+Transport serialMIDI(swSerial);
+MIDI_NAMESPACE::MidiInterface<Transport> MIDI((Transport&)serialMIDI);
+#else
+// USB MIDI Initialisation
+USBMIDI_CREATE_INSTANCE(0, MIDI);
+#endif
 
 #define MIDI_CHANNEL 1  // Comment out if want to specify different channels per track
 #ifndef MIDI_CHANNEL
@@ -165,9 +186,6 @@ int encstep;  // -1 = nothing to edit yet
 int enctrack; // -1 = nothing to edit yet
 unsigned long enctimeout;
 #define ENC_TIMEOUT 5000  // Timeout in mS before mode switches back to play mode
-
-// USB MIDI Initialisation
-USBMIDI_CREATE_INSTANCE(0, MIDIUSB);
 
 // MIDI Control/Program Change configuration
 byte midiprogram;
@@ -454,7 +472,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Running in non-MIDI test mode");
 #else
-  MIDIUSB.begin(MIDI_CHANNEL_OFF);
+  MIDI.begin(MIDI_CHANNEL_OFF);
 #endif
 }
 
@@ -489,7 +507,7 @@ void loop() {
         Serial.print("MIDI Note Off: ");
         Serial.println(lastnote[t]);
 #else
-        MIDIUSB.sendNoteOff(lastnote[t], 0, ch);
+        MIDI.sendNoteOff(lastnote[t], 0, ch);
 #endif
         lastnote[t] = NO_NOTE;
     }
@@ -551,7 +569,7 @@ void loop() {
       Serial.print("MIDI Note On: ");
       Serial.println(lastnote[t]);
 #else
-      MIDIUSB.sendNoteOn(steps[t][curstep], 127, ch);
+      MIDI.sendNoteOn(steps[t][curstep], 127, ch);
 #endif
       lastnote[t] = steps[t][curstep];
     }
@@ -581,5 +599,5 @@ void midiPCCC (int dir) {
 #else
   byte ch = midiCh[t];
 #endif
-  MIDIUSB.sendProgramChange (midiprogram, ch);  
+  MIDI.sendProgramChange (midiprogram, ch);  
 }

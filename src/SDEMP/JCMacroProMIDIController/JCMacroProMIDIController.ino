@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  JC Pro Macro MIDI Controller
-//  
+//  https://diyelectromusic.wordpress.com/2021/10/13/jc-pro-macro-v2-midi-controller-part-2/
 //
       MIT License
       

@@ -36,6 +36,7 @@ PIN_BASE = 6
 NUM_UARTS = 8
 MIDI_CH_BASE = 1
 
+pin = Pin(25, machine.Pin.OUT)
 rx_uart = UART(0,31250)
 
 @asm_pio(sideset_init=PIO.OUT_HIGH, out_init=PIO.OUT_HIGH, out_shiftdir=PIO.SHIFT_RIGHT)
@@ -89,10 +90,12 @@ def pio_midi_send(cmd, ch, b1, b2):
 # Basic MIDI handling commands
 def doMidiNoteOn(ch,cmd,note,vel):
     #print(ch,"\tNote On \t", note, "\t", vel)
+    pin.value(1)
     pio_midi_send(cmd, ch, note, vel)
 
 def doMidiNoteOff(ch,cmd,note,vel):
     #print(ch,"\tNote Off\t", note, "\t", vel)
+    pin.value(0)
     pio_midi_send(cmd, ch, note, vel)
 
 def doMidiThru(ch,cmd,d1,d2):

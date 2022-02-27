@@ -97,10 +97,10 @@ char keys[ROWS][COLS] = {
 /* BP26 */ {B_FROG, 0,        0,       B_ORGAN, B_MUSICBOX, 0,         73, 65, 62, 54},
 /* BP27 */ {B_DUCK, 0,        0,       B_WALTZ, B_MANDOLIN, 0,         72, 64, 63, 55},
 };
-// ROWs = OUTPUTS; HIGH by default, set LOW individually to scan
+// ROWs = INPUTS with INPUT_PULLUP.  Will read HIGH by default, but pulled LOW if a switch is pressed.
 //                  BP20,21,22,23,24,25,26,27
 byte rowPins[ROWS] = { 4, 5, 6, 7, 8,10,11,12 }; // {12,11,10, 8, 7, 6, 5, 4};
-// COLs = INPUTS with INPUT_PULLUP.  Switches connect them to the COLs.
+// COLs = OUTPUTS. Set to HIGH by default; set LOW to scan.  Connected to ROW INPUTs if a switch is pressed.
 //                  BP00,02,03,04,05,06,07,11,12,13
 byte colPins[COLS] = {A0,A1,A2,A3,A4,A5, 1, 0, 2, 3};
 Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );

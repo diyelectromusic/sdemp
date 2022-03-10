@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Rotary Phone Decoder Test
-//  
+//  https://diyelectromusic.wordpress.com/2022/03/10/vintage-rotary-phone-midi-controller-part-2/
 //
       MIT License
       

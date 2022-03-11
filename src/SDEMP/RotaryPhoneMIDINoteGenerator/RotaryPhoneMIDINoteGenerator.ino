@@ -51,7 +51,30 @@ int lastDigit;
 bool lastOffHook;
 
 #define NUM_NOTES 10
-int notes[NUM_NOTES] = {36, 48, 55, 60, 62, 64, 67, 69, 72, 79};
+
+// Here is a simple "one note per digit" example
+#define NUM_STEPS  1
+int notes[NUM_NOTES][NUM_STEPS] = {36, 48, 55, 60, 62, 64, 67, 69, 72, 79};
+
+// Here is a more complex example, with 3 notes that can be
+// played in sequence for every digit.
+#if 0
+#define NUM_STEPS  3
+int notes[NUM_NOTES][NUM_STEPS] = {
+/* "0" */  {36, 43, 48,},
+/* "1" */  {48, 52, 55,},
+/* "2" */  {55, 57, 60,},
+/* "3" */  {60, 72, 64,},
+/* "4" */  {62, 64, 69,},
+/* "5" */  {64, 67, 76,},
+/* "6" */  {67, 72, 79,},
+/* "7" */  {69, 45, 81,},
+/* "8" */  {72, 48, 60,},
+/* "9" */  {79, 67, 55,},
+};
+#endif
+
+int playing[NUM_NOTES];
 
 void setup() {
 #ifdef TIMING
@@ -72,7 +95,11 @@ void loop() {
   if (digit != lastDigit) {
     // Something has changed...
     if (digit != NO_DIGIT) {
-      MIDI.sendNoteOn (notes[digit], 127, MIDI_CHANNEL);
+      MIDI.sendNoteOn (notes[digit][playing[digit]], 127, MIDI_CHANNEL);
+      playing[digit]++;
+      if (playing[digit] >= NUM_STEPS) {
+        playing[digit] = 0;
+      }
     }
   }
   bool offHook = rotaryOffHook();
@@ -80,7 +107,9 @@ void loop() {
     // Phone back on the hook
 //    Serial.print("\nOn Hook\n");
     for (int i=0; i<NUM_NOTES; i++) {
-      MIDI.sendNoteOff (notes[i], 0, MIDI_CHANNEL);
+      for (int s=0; s<NUM_STEPS; s++) {
+        MIDI.sendNoteOff (notes[i][s], 0, MIDI_CHANNEL);
+      }
     }
   }
   if (!lastOffHook && offHook) {

@@ -124,13 +124,14 @@ TShutdownMode CKernel::Run (void)
 		// Assumes consecutive pots used by the Synth on the first channels of the MCP300X
 		for (int potCh=0; potCh<SYNTH_POTS; potCh++)
 		{
-			unsigned nResult = m_MCP300X.AnalogRead (potCh);
-			if (nResult < CMCP300X::ResultSPIError)
+			unsigned nResult = m_MCP300X.DoSingleEndedConversionRaw (potCh);
+			if (nResult >= 0)
 			{
 				m_CircleSynth.SetPot(potCh, nResult);
 			}
 		}
 
+		m_Timer.MsDelay (1000);
 		m_CircleSynth.Process (bUpdated);
 
 		m_Screen.Rotor (0, nCount);

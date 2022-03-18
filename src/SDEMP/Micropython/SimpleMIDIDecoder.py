@@ -57,6 +57,45 @@
 #    md.cbNoteOff (doMidiNoteOff)
 #    md.cbThru (doMidiThru)
 #---------------------
+#
+# It is possible to provide an optional "instance" parameter to the
+# decoder on initialisation.  This will be provided to the callback
+# as the last parameter.
+#
+# The following example shows how to run a decoder on both hardware
+# serial ports (UARTs) for the Pico.
+#
+#---------------------
+#    import machine
+#    import SimpleMIDIDecoder
+#
+#    uart = []
+#    for i in range(2):
+#        tmpuart = machine.UART(i,31250)
+#        uart.append(tmpuart)
+#
+#    def doMidiNoteOn(ch,cmd,note,vel,idx):
+#        print(idx,"\tNote On \t", note, "\t", vel)
+#
+#    def doMidiNoteOff(ch,cmd,note,vel,idx):
+#        print(idx,"\tNote Off\t", note, "\t", vel)
+#
+#    def doMidiThru(ch,cmd,data1,data2,idx):
+#        print(idx,"\tThru\t", cmd, "\t", data1, "\t", data2)
+#
+#    md = []
+#    for i in range(2):
+#        tmpmd = SimpleMIDIDecoder.SimpleMIDIDecoder(i)
+#        tmpmd.cbNoteOn (doMidiNoteOn)
+#        tmpmd.cbNoteOff (doMidiNoteOff)
+#        tmpmd.cbThru (doMidiThru)
+#        md.append(tmpmd)
+#
+#    while True:
+#        for i in range(2):
+#            if (uart[i].any()):
+#                md[i].read(uart[i].read(1)[0])
+#---------------------
 
 
 # Implement a simple MIDI decoder.
@@ -77,35 +116,57 @@
 #
 class SimpleMIDIDecoder:
     
-    def __init__(self):
+    def __init__(self, idx=-1):
+        self.idx = idx
         self.ch = 0
         self.cmd = 0
         self.d1 = 0
         self.d2 = 0
-        self.cbThruFn = self.defThru
-        self.cbNoteOnFn = self.defNoteOn
-        self.cbNoteOffFn = self.defNoteOff
+        self.cbThruFn = 0
+        self.cbNoteOnFn = 0
+        self.cbNoteOffFn = 0
         
     def cbThru (self, callback):
         self.cbThruFn = callback
 
-    def defThru (self, ch, cmd, d1, d2):
-        if (d2 == -1):
-            print ("Thru ", ch, ":", hex(cmd), ":", d1)
+    def ThruFn (self, ch, cmd, d1, d2, idx):
+        if (self.cbThruFn):
+            if (idx != -1):
+                self.cbThruFn(ch, cmd, d1, d2, idx)
+            else:
+                self.cbThruFn(ch, cmd, d1, d2)
         else:
-            print ("Thru ", ch, ":", hex(cmd), ":", d1, ":", d2)
+            # Default THRU behaviour
+            if (d2 == -1):
+                print ("Thru ", ch, ":", hex(cmd), ":", d1)
+            else:
+                print ("Thru ", ch, ":", hex(cmd), ":", d1, ":", d2)
         
     def cbNoteOn (self, callback):
         self.cbNoteOnFn = callback
     
-    def defNoteOn (self, ch, cmd, note, level):
-        print ("NoteOn ", ch, ":", note, ":", level)
+    def NoteOnFn (self, ch, cmd, note, level, idx):
+        if (self.cbNoteOnFn):
+            if (idx != -1):
+                self.cbNoteOnFn(ch, cmd, note, level, idx)
+            else:
+                self.cbNoteOnFn(ch, cmd, note, level)
+        else:
+            # Default NoteOn behaviour
+            print ("NoteOn ", ch, ":", note, ":", level)
         
     def cbNoteOff (self, callback):
         self.cbNoteOffFn = callback
 
-    def defNoteOff (self, ch, cmd, note, level):
-        print ("NoteOff ", ch, ":", note, ":", level)
+    def NoteOffFn (self, ch, cmd, note, level, idx):
+        if (self.cbNoteOffFn):
+            if (idx != -1):
+                self.cbNoteOffFn(ch, cmd, note, level, idx)
+            else:
+                self.cbNoteOffFn(ch, cmd, note, level)
+        else:
+            # Default NoteOff behaviour
+            print ("NoteOff ", ch, ":", note, ":", level)
 
     def read(self, mb):
         if ((mb >= 0x80) and (mb <= 0xEF)):
@@ -142,7 +203,7 @@ class SimpleMIDIDecoder:
                 else:
                     # Already have the note, so store the level
                     self.d2 = mb
-                    self.cbNoteOffFn (self.ch, self.cmd, self.d1, self.d2)
+                    self.NoteOffFn (self.ch, self.cmd, self.d1, self.d2, self.idx)
                     self.d1 = 0
                     self.d2 = 0
             elif (self.cmd == 0x90):
@@ -155,22 +216,22 @@ class SimpleMIDIDecoder:
                     self.d2 = mb
                     # Special case if the level (data2) is zero - treat as NoteOff
                     if (self.d2 == 0):
-                        self.cbNoteOffFn (self.ch, self.cmd, self.d1, self.d2)
+                        self.NoteOffFn (self.ch, self.cmd, self.d1, self.d2, self.idx)
                     else:
-                        self.cbNoteOnFn (self.ch, self.cmd, self.d1, self.d2)
+                        self.NoteOnFn (self.ch, self.cmd, self.d1, self.d2, self.idx)
                     self.d1 = 0
                     self.d2 = 0
             elif (self.cmd == 0xC0):
                 # Program Change
                 # This is a single data-byte message
                 self.d1 = mb
-                self.cbThruFn(self.ch, self.cmd, self.d1, -1)
+                self.ThruFn(self.ch, self.cmd, self.d1, -1, self.idx)
                 self.d1 = 0
             elif (self.cmd == 0xD0):
                 # Channel Pressure
                 # This is a single data-byte message
                 self.d1 = mb
-                self.cbThruFn(self.ch, self.cmd, self.d1, -1)
+                self.ThruFn(self.ch, self.cmd, self.d1, -1, self.idx)
                 self.d1 = 0
             else:
                 # All other commands are two-byte data commands
@@ -180,7 +241,7 @@ class SimpleMIDIDecoder:
                 else:
                     # Store the second data byte and action
                     self.d2 = mb
-                    self.cbThruFn(self.ch, self.cmd, self.d1, self.d2)
+                    self.ThruFn(self.ch, self.cmd, self.d1, self.d2, self.idx)
                     self.d1 = 0
                     self.d2 = 0
 

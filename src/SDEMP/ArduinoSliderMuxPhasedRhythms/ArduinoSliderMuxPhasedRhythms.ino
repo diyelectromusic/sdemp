@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino Slider Mux Phased Rhythms
-//  
+//  https://diyelectromusic.wordpress.com/2022/03/28/arduino-slider-phased-rhythms/
 //
       MIT License
       

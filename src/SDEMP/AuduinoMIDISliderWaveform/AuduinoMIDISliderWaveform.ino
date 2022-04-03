@@ -102,6 +102,7 @@ uint8_t volume;
 #define GRAIN2_FREQ_CONTROL  (3)
 #define GRAIN2_DECAY_CONTROL (2)
 //#define VOL_CONTROL          (5) // Comment out to ignore volume
+//#define CW_POTS   // Comment out for original "counter-clockwise = 5V" pot wiring
 
 // Changing these will also requires rewriting audioOn()
 
@@ -241,7 +242,11 @@ void loop() {
   // Avoid using any functions that make extensive use of interrupts, or turn interrupts off.
   // They will cause clicks and poops in the audio.
 #ifdef SYNC_CONTROL
+#ifdef CW_POTS
   syncPhaseInc = mapPhaseInc(1023-analogRead(SYNC_CONTROL)) / 4;
+#else
+  syncPhaseInc = mapPhaseInc(analogRead(SYNC_CONTROL)) / 4;
+#endif
 #else
   // MIDI Based frequency mapping
   if (midiNote == 0) {
@@ -260,10 +265,17 @@ void loop() {
   // Stepped pentatonic mapping: D, E, G, A, B
   //syncPhaseInc = mapPentatonic(analogRead(SYNC_CONTROL));
 
+#ifdef CW_POTS
   grainPhaseInc  = mapPhaseInc(1023-analogRead(GRAIN_FREQ_CONTROL)) / 2;
   grainDecay     = (1023-analogRead(GRAIN_DECAY_CONTROL)) / 8;
   grain2PhaseInc = mapPhaseInc(1023-analogRead(GRAIN2_FREQ_CONTROL)) / 2;
   grain2Decay    = (1023-analogRead(GRAIN2_DECAY_CONTROL)) / 4;
+#else
+  grainPhaseInc  = mapPhaseInc(analogRead(GRAIN_FREQ_CONTROL)) / 2;
+  grainDecay     = analogRead(GRAIN_DECAY_CONTROL) / 8;
+  grain2PhaseInc = mapPhaseInc(analogRead(GRAIN2_FREQ_CONTROL)) / 2;
+  grain2Decay    = analogRead(GRAIN2_DECAY_CONTROL) / 4;
+#endif
 
 #ifdef VOL_CONTROL
   volume = analogRead(VOL_CONTROL) >> 3;  // 0 to 127 scaling

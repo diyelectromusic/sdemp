@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Simple MIDI Serial Monitor 2
-//  https://diyelectromusic.wordpress.com/2022/04/06/simple-midi-serial-monitor/
+//  https://diyelectromusic.wordpress.com/2022/04/07/simple-midi-serial-monitor-part-2/
 //
       MIT License
       
@@ -45,14 +45,23 @@
 //    Leonardo: HW_SERIAL, USB_DEVICE, HW_SERIAL2, SW_SERIAL, SW_SERIAL2, USB_HOST (with additional shield).
 //    Mega: HW_SERIAL, HW_SERIAL2, HW_SERIAL3, HW_SERIAL4, SW_SERIAL, SW_SERIAL2, USB_HOST (with additional shield).
 //
-//#define MIDI_HW_SERIAL  1
-#define MIDI_HW_SERIAL2  2
+#define MIDI_HW_SERIAL  1
+//#define MIDI_HW_SERIAL2  2
 //#define MIDI_HW_SERIAL3  3
 //#define MIDI_HW_SERIAL4  4
 //#define MIDI_SW_SERIAL   5
 //#define MIDI_SW_SERIAL2  6
 //#define MIDI_USB_HOST    7
 //#define MIDI_USB_DEVICE  8
+
+// If serial port output is required, decide if this is to be over
+// the hardware serial port or a Software Serial link.
+//
+//#define DBG_HW_SERIAL   1
+#define DBG_SW_SERIAL   2
+
+// Uncomment this if you want the LED to flash
+#define MIDI_LED LED_BUILTIN
 
 // ---- Definitions for MIDI INPUT devices ----
 //
@@ -119,6 +128,21 @@ USBMIDI_CREATE_INSTANCE(0, MIDI_UD);
 #define MIDI_I MIDI_UD
 #endif
 
+#ifdef DBG_HW_SERIAL
+#define DBG_S Serial
+#endif
+
+#ifdef DBG_SW_SERIAL
+#include <SoftwareSerial.h>
+// From https://www.arduino.cc/en/Reference/softwareSerial
+// This default configurationis not supported on ATmega32U4
+// or ATmega2560 based boards, see MIDI_SW_SERIAL2.
+#define SS_RX  2
+#define SS_TX  3
+SoftwareSerial sSerial = SoftwareSerial(SS_RX, SS_TX);
+#define DBG_S sSerial
+#endif
+
 // ---------------------------------------------------------------
 //
 // Add the callbacks to be called when a specific MIDI
@@ -130,55 +154,52 @@ USBMIDI_CREATE_INSTANCE(0, MIDI_UD);
 // ---------------------------------------------------------------
 
 void handleNoteOn(byte channel, byte pitch, byte velocity) {
-#ifndef MIDI_HW_SERIAL
-  Serial.print("NoteOn: ");
-  Serial.print(channel);
-  Serial.print(" ");
-  Serial.print(pitch);
-  Serial.print(" ");
-  Serial.print(velocity);
-  Serial.print("\n");
+#ifdef DBG_S
+  DBG_S.print("NoteOn: ");
+  DBG_S.print(channel);
+  DBG_S.print(" ");
+  DBG_S.print(pitch);
+  DBG_S.print(" ");
+  DBG_S.print(velocity);
+  DBG_S.print("\n");
 #endif
   ledOn();
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity) { 
-#ifndef MIDI_HW_SERIAL
-  Serial.print("NoteOff: ");
-  Serial.print(channel);
-  Serial.print(" ");
-  Serial.print(pitch);
-  Serial.print(" ");
-  Serial.print(velocity);
-  Serial.print("\n");
+#ifdef DBG_S
+  DBG_S.print("NoteOff: ");
+  DBG_S.print(channel);
+  DBG_S.print(" ");
+  DBG_S.print(pitch);
+  DBG_S.print(" ");
+  DBG_S.print(velocity);
+  DBG_S.print("\n");
 #endif
   ledOff();
 }
 
 void handleProgramChange(byte channel, byte program) { 
-#ifndef MIDI_HW_SERIAL
-  Serial.print("Program: ");
-  Serial.print(channel);
-  Serial.print(" ");
-  Serial.print(program);
-  Serial.print("\n");
+#ifdef DBG_S
+  DBG_S.print("Program: ");
+  DBG_S.print(channel);
+  DBG_S.print(" ");
+  DBG_S.print(program);
+  DBG_S.print("\n");
 #endif
 }
 
 void handleControlChange(byte channel, byte control, byte value) { 
-#ifndef MIDI_HW_SERIAL
-  Serial.print("Control: ");
-  Serial.print(channel);
-  Serial.print(" ");
-  Serial.print(control);
-  Serial.print(" ");
-  Serial.print(value);
-  Serial.print("\n");
+#ifdef DBG_S
+  DBG_S.print("Control: ");
+  DBG_S.print(channel);
+  DBG_S.print(" ");
+  DBG_S.print(control);
+  DBG_S.print(" ");
+  DBG_S.print(value);
+  DBG_S.print("\n");
 #endif
 }
-
-// Uncomment this if you want the LED to flash
-//#define MIDI_LED LED_BUILTIN
 
 void ledOn() {
 #ifdef MIDI_LED
@@ -203,8 +224,8 @@ void ledInit() {
 
 void setup() {
   // If we aren't using HW serial 1 then we can use it for output!
-#ifndef MIDI_HW_SERIAL
-  Serial.begin(9600);
+#ifdef DBG_S
+  DBG_S.begin(9600);
 #endif
   ledInit();
 

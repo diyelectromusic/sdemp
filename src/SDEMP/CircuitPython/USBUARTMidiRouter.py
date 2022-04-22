@@ -45,12 +45,16 @@ usbmidi = adafruit_midi.MIDI(midi_in=usb_midi.ports[0], midi_out=usb_midi.ports[
 
 led = digitalio.DigitalInOut(board.LED)
 led.direction = digitalio.Direction.OUTPUT
+led.value = True
+#led.value = False
 
 def ledOn():
-    led.value = True
+    led.value = False
+#    led.value = True
 
 def ledOff():
-    led.value = False
+    led.value = True
+#    led.value = False
 
 while True:
     msg = usbmidi.receive()

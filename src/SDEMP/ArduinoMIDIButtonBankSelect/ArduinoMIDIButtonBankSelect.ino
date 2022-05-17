@@ -33,7 +33,6 @@
     Arduino USB Transport   - https://github.com/lathoub/Arduino-USBMIDI
 */
 #include <MIDI.h>
-#include <USB-MIDI.h>
 
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the Arduino built-in serial port
@@ -44,6 +43,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 // Uncomment this to include MIDI USB device support.
 // This is only available on certain boards (e.g. ATmega32U4)
 #define MIDI_USB_DEV
+#include <USB-MIDI.h>
 #ifdef MIDI_USB_DEV
 USBMIDI_CREATE_INSTANCE(0, MIDI_UD);
 #endif

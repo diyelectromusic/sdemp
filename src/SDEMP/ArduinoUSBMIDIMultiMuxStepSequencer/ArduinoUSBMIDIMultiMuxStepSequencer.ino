@@ -33,7 +33,6 @@
     74HC4051 Multiplexer - https://www.gammon.com.au/forum/?id=11976
 */
 #include <MIDI.h>
-#include <USB-MIDI.h>
 
 //#define DEBUG
 
@@ -44,7 +43,7 @@
 //#define TEMPO_POT  A0 // Optional tempo control
 
 #define NUM_MUX  2  // Can have as many multiplexers as analog inputs
-int mux_pins[NUM_MUX] = {A4, A5}; // One analog input pin per multiplexer
+int mux_pins[NUM_MUX] = {A2, A3}; // One analog input pin per multiplexer
 
 #define MIN_POT_READING 10 // Value for the lowest note
 #define MUX_S0   2  // Digital IO pins to control the MUX
@@ -65,6 +64,7 @@ int mux_pins[NUM_MUX] = {A4, A5}; // One analog input pin per multiplexer
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 #ifdef MIDI_USB_DEV
+#include <USB-MIDI.h>
 USBMIDI_CREATE_INSTANCE(0, MIDI_UD);
 #endif
 

@@ -98,18 +98,32 @@ uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 #define VS_RESET  8 // Reset is active low
 #endif
 #ifdef VS1003_MODULE
+#if !defined(ARDUINO_AVR_MEGA2560)
 // VS1003 Module pin definitions
 #define VS_XCS    8 // Control Chip Select Pin (for accessing SPI Control/Status registers)
 #define VS_XDCS   9 // Data Chip Select / BSYNC Pin
 #define VS_DREQ   7 // Data Request Pin: Player asks for more data
 #define VS_RESET  10 // Reset is active low
+#else
+#define VS_XCS    49
+#define VS_XDCS   47
+#define VS_DREQ   48
+#define VS_RESET  53
+#endif /* ARDUINO_AVR_MEGA2560 */
 #endif
 // VS10xx SPI pin connections (both boards)
 // Provided here for info only - not used in the sketch as the SPI library handles this
+#if !defined(ARDUINO_AVR_MEGA2560)
 #define VS_MOSI   11
 #define VS_MISO   12
 #define VS_SCK    13
 #define VS_SS     10
+#else
+#define VS_MOSI   51
+#define VS_MISO   50
+#define VS_SCK    52
+#define VS_SS     53
+#endif /* ARDUINO_AVR_MEGA2560 */
 
 // Optional - use Digital IO as the power pins
 //#define VS_VCC    6

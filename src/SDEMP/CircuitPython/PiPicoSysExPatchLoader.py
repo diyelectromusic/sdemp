@@ -81,7 +81,7 @@ except OSError as exec:
 
 files = os.listdir("/syx")
 
-fnregex = re.compile("\.syx$")
+fnregex = re.compile("\.[sS][yY][xX]$")
 
 fnames = []
 for f in files:
@@ -105,9 +105,19 @@ def sendSysExFromFile (fileidx):
     with open (filename, "rb") as fh:
         sysex = fh.read()
         
+    # Need to parse this into individual SysEx messages
+    # Split the string on the value 0xF7, but also need
+    # to add it back in again afterwards!
+    sysex_msgs = [e + b'\xF7' for e in sysex.split(b'\xF7')]
+    # Last thing in the list will be an empty 'F7' after the above line...
+    sysex_msgs.pop()
+
     #print(sysex)
-    written = uart.write(sysex)
-    print ("Written: ", written)
+    for sx in sysex_msgs:
+        written = uart.write(sx)
+        print ("Written: ", written)
+        # Slight delay to let the synth catch up
+        time.sleep(0.5)
 
 #print ("Number of names = ", len(fnames))
 #for n in range(len(fnames)):
@@ -119,6 +129,7 @@ FONT = terminalio.FONT
 TEXTCOLOUR = 0xFFFFFF
 BACKCOLOUR = 0x000000
 HIGHCOLOUR = 0xC080C0
+SENDCOLOUR = 0xFF0000
 NAMES_PER_PAGE = 6
 namelabs = []
 for f in range(NAMES_PER_PAGE):
@@ -149,6 +160,13 @@ def highlightName (page, name):
             namelabs[d].color = HIGHCOLOUR
         else:
             namelabs[d].color = TEXTCOLOUR
+
+def sendingName (page, name):
+    for d in range(NAMES_PER_PAGE):
+        nameidx = NAMES_PER_PAGE*page + d
+        if nameidx == name:
+            namelabs[d].color = SENDCOLOUR
+    display.show(menus)
 
 page = 0
 name = 0
@@ -189,6 +207,7 @@ def pageDown ():
 
 def sendFile ():
     print ("Sending: ", fnames[name])
+    sendingName(page, name)
     sendSysExFromFile(name)
 
 def buttonPress (btn):
@@ -221,4 +240,5 @@ time.sleep(2)
 
 # Without this, the displayio libraries always treat the display as a "console"
 displayio.release_displays()
+
 

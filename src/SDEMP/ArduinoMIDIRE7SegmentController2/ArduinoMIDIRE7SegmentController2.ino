@@ -44,7 +44,7 @@
 #define INSTANT_PC 1
 
 // Comment this out if you don't want a "bank select" mode.
-// Set this to the rotary encoder switch if you want to use that
+// By default this will use the rotary encoder switch
 // to switch modes.
 #define BANK_SEL 1
 

@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino MIDI R2R Synthesis - Part 2
-//  
+//  https://diyelectromusic.wordpress.com/2022/10/11/arduino-midi-r2r-digital-audio-part-2/
 //
       MIT License
       

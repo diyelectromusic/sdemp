@@ -83,9 +83,9 @@ for i in range(NUM_UARTS):
 
 def midi_send(cmd, ch, b1, b2):
     if (b2 == -1):
-        tx_uart.write(ustruct.pack("bb",cmd+ch,b1))
+        tx_uart.write(ustruct.pack("bb",cmd+ch-1,b1))
     else:
-        tx_uart.write(ustruct.pack("bbb",cmd+ch,b1,b2))
+        tx_uart.write(ustruct.pack("bbb",cmd+ch-1,b1,b2))
 
 # Basic MIDI handling commands.
 # These will only be called when a MIDI decoder

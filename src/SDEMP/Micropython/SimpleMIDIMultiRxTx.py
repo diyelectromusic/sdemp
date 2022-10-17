@@ -181,9 +181,9 @@ def pio_midi_send(pio_uart, cmd, ch, b1, b2):
 
 def uart_midi_send(uart, cmd, ch, b1, b2):
     if (b2 == -1):
-        hw_uarts[uart].write(ustruct.pack("bb",cmd+ch,b1))
+        hw_uarts[uart].write(ustruct.pack("bb",cmd+ch-1,b1))
     else:
-        hw_uarts[uart].write(ustruct.pack("bbb",cmd+ch,b1,b2))
+        hw_uarts[uart].write(ustruct.pack("bbb",cmd+ch-1,b1,b2))
 
 def midi_send(uart, cmd, ch, b1, b2):
     print ("Sending (",ch,cmd,b1,b2,") to port ", uart)

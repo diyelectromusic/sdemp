@@ -175,7 +175,7 @@ class SimpleMIDIDecoder:
             
             # Extract the MIDI command and channel (1-16)
             self.cmd = mb & 0xF0
-            self.ch = 1 + mb & 0x0F
+            self.ch = 1 + (mb & 0x0F)
             
             # Initialise the two data bytes ready for processing
             self.d1 = 0

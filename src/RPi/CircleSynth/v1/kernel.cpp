@@ -131,7 +131,6 @@ TShutdownMode CKernel::Run (void)
 			}
 		}
 
-		m_Timer.MsDelay (1000);
 		m_CircleSynth.Process (bUpdated);
 
 		m_Screen.Rotor (0, nCount);

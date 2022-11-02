@@ -20,4 +20,4 @@ An old, second-hand or hand-me-down music keyboard, computer and amplification a
 
 All code is provided AS IS with no implied fit for purpose as detailed in the included MIT License.
 
-All content and code (c) diyelectromusic (Kevin)
+All content and code (c) <a rel="me" href="https://mastodon.social/@diyelectromusic">diyelectromusic</a> (Kevin)

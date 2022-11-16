@@ -35,6 +35,7 @@
     "Audio Output and Sound Synthesis" from "Arduino for Musicians" Brent Edstrom
 */
 
+// Comment out for a test signal without requiring a pot
 #define FREQPOT A0
 
 // Choose the wave you want:
@@ -93,6 +94,7 @@
 uint16_t accumulator;
 uint16_t frequency;
 uint8_t  wave;
+uint16_t freq;
 
 //NOTE: If you change the size of the wavetable, then the setWavetable
 //      function will need re-writing.
@@ -220,14 +222,26 @@ void setup() {
   wave = 0;
   accumulator = 0;
   frequency = 440;
+  freq = 220;
   
   delay(5000); // 5 seconds to output a test 440Hz tone ("concert A").
 }
 
 void loop() {
+#ifdef FREQPOT
   // Use an analog input to set the frequency.
   // This will choose a frequency between 220 (A3) and 1243 Hz (approx D#6).
   frequency = 220+analogRead(FREQPOT);
+#else
+  // Sweep over a 2 octave frequency range from 220 (A3) to 880 (A5)
+  frequency = freq;
+  freq ++;
+  if (freq > 880) {
+    freq = 220;
+  }
+  // Note: this slows down the updating to a useful level too...
+  Serial.println(freq);
+#endif
 }
 
 // This is the code that is run on every "tick" of the timer.

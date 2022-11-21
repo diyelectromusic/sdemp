@@ -7,7 +7,7 @@
 //
       MIT License
       
-      Copyright (c) 2020 diyelectromusic (Kevin)
+      Copyright (c) 2022 diyelectromusic (Kevin)
       
       Permission is hereby granted, free of charge, to any person obtaining a copy of
       this software and associated documentation files (the "Software"), to deal in
@@ -51,6 +51,9 @@
 // Set the MIDI Channel to listen on
 #define MIDI_CHANNEL 1
 
+// Uncomment this to pass additional notes on via MIDI OUT
+//#define MIDI_PASS_THRU 1
+
 #define POT_ZERO 15 // Anything below this value is treated as "zero"
 
 // Set up the analog inputs - comment out if you aren't using this one
@@ -70,7 +73,7 @@
 // ADSR default parameters in mS
 #define ADSR_A       50
 #define ADSR_D      200
-#define ADSR_S   100000  // Large so the note will sustain unless a noteOff comes
+#define ADSR_S    50000  // Large so the note will sustain unless a noteOff comes
 #define ADSR_R      200
 #define ADSR_ALVL   250  // Level 0 to 255
 #define ADSR_DLVL    64  // Level 0 to 255
@@ -119,6 +122,7 @@ int carrier_freq;
 long fm_intensity;
 int adsr_a, adsr_d;
 int testcount;
+int playing;
 
 // smoothing for intensity to remove clicks on transitions
 float smoothness = 0.95f;
@@ -137,17 +141,36 @@ void HandleNoteOn(byte channel, byte note, byte velocity) {
       HandleNoteOff(channel, note, velocity);
       return;
   }
+#ifdef MIDI_PASS_THRU
+  if (playing != 0) {
+    // Already playing a note, so pass this one on
+#ifndef TEST_NOTE
+    MIDI.sendNoteOn(note, velocity, channel);
+#endif
+    return;
+  }
+#endif
+
   envelope.noteOff(); // Stop any already playing note
   carrier_freq = mtof(note);
   setFreqs();
   envelope.noteOn();
+  playing = note;
   digitalWrite(LED, HIGH);
 }
 
 void HandleNoteOff(byte channel, byte note, byte velocity) {
-  if (carrier_freq == mtof(note)) {
+  if (playing == note) {
     // If we are still playing the same note, turn it off
     envelope.noteOff();
+    playing = 0;
+  } else {
+#ifdef MIDI_PASS_THRU
+    // Note message wasn't for us, so pass it on
+#ifndef TEST_NOTE
+    MIDI.sendNoteOff(note, velocity, channel);
+#endif
+#endif
   }
 
   digitalWrite(LED, LOW);
@@ -165,6 +188,10 @@ void setup(){
   MIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
   MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
   MIDI.begin(MIDI_CHANNEL);
+#ifdef MIDI_PASS_THRU
+  // Disable automatic THRU handling
+  MIDI.turnThruOff();
+#endif
 #endif
 
   adsr_a = ADSR_A;
@@ -177,6 +204,7 @@ void setup(){
 
   // Set default parameters for any potentially unused/unread pots
   potcount = 0;
+  playing = 0;
 
   startMozzi(CONTROL_RATE);
 }
@@ -233,7 +261,7 @@ void updateControl(){
     potINTS = mozziAnalogRead(INTS_PIN); // value is 0-1023
     if (potINTS<POT_ZERO) potINTS = 0;
 #else
-    potINTS = DEF_potINTS
+    potINTS = DEF_potINTS;
 #endif
     break;
   case 2:
@@ -311,9 +339,10 @@ void updateControl(){
   }
 
   // use a float here for low frequencies
+  float mod_speed = 0.0;
   if (potRATE != mod_rate) {
     mod_rate = potRATE;
-    float mod_speed = (float)potRATE/100;
+    mod_speed = (float)potRATE/100;
     kIntensityMod.setFreq(mod_speed);
   }
 

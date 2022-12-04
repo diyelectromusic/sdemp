@@ -61,8 +61,9 @@
 #define INTS_PIN 1  // FM intensity
 #define RATE_PIN 2  // Modulation Rate
 #define MODR_PIN 3  // Modulation Ratio
-#define AD_A_PIN 4  // ADSR Attack
-#define AD_D_PIN 5  // ADSR Delay
+//#define AD_A_PIN 4  // ADSR Attack
+//#define AD_D_PIN 5  // ADSR Delay
+#define FREQ_PIN 4  // Optional Frequency Control
 
 // Default potentiometer values if no pot defined
 #define DEF_potWAVT 2
@@ -77,6 +78,8 @@
 #define ADSR_R      200
 #define ADSR_ALVL   250  // Level 0 to 255
 #define ADSR_DLVL    64  // Level 0 to 255
+
+#define MIN_FREQ    220  // Range min to min+1023
 
 //#define TEST_NOTE 50 // Comment out to remove test without MIDI
 //#define DEBUG     1  // Comment out to remove debugging info - can only be used with TEST_NOTE
@@ -123,13 +126,14 @@ long fm_intensity;
 int adsr_a, adsr_d;
 int testcount;
 int playing;
+int lastfreq;
 
 // smoothing for intensity to remove clicks on transitions
 float smoothness = 0.95f;
 Smooth <long> aSmoothIntensity(smoothness);
 
 int potcount;
-int potWAVT, potMODR, potINTS, potRATE, potAD_A, potAD_D;
+int potWAVT, potMODR, potINTS, potRATE, potAD_A, potAD_D, potFREQ;
 
 // envelope generator
 ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
@@ -205,6 +209,7 @@ void setup(){
   // Set default parameters for any potentially unused/unread pots
   potcount = 0;
   playing = 0;
+  lastfreq = 0;
 
   startMozzi(CONTROL_RATE);
 }
@@ -247,7 +252,7 @@ void updateControl(){
   // Read the potentiometers - do one on each updateControl scan.
   // Note: each potXXXX value is remembered between scans.
   potcount ++;
-  if (potcount >= 6) potcount = 0;
+  if (potcount >= 7) potcount = 0;
   switch (potcount) {
   case 0:
 #ifdef WAVT_PIN
@@ -292,6 +297,12 @@ void updateControl(){
 #else
     potAD_D = ADSR_D;
 #endif
+  case 6:
+#ifdef FREQ_PIN
+    potFREQ = mozziAnalogRead(FREQ_PIN); // value is 0-1023
+#else
+    potFREQ = 0; // Disabled
+#endif
     break;
   default:
     potcount = 0;
@@ -305,6 +316,7 @@ void updateControl(){
   Serial.print(potMODR); Serial.print("\t");
   Serial.print(potAD_A); Serial.print("\t");
   Serial.print(potAD_D); Serial.print("\t");
+  Serial.print(potFREQ); Serial.print("\t");
 #endif
 #endif
 
@@ -323,6 +335,30 @@ void updateControl(){
     adsr_d = potAD_D;
     setEnvelope();
   }
+
+#ifdef FREQ_PIN
+  // See if the frequency changed...
+  // NB: MIDI Notes will take precedent
+  if (lastfreq != potFREQ) {
+    if (lastfreq == 0) {
+      // This is the first time the sound starts, so play the envelope
+      envelope.noteOn();
+    }
+    if (potFREQ == 0) {
+      // The frequency needs turning off
+      envelope.noteOff();
+    } else {
+      if (playing) {
+        // Use the sounding note as the starting point
+        carrier_freq = mtof(playing) + potFREQ;
+      } else {
+        carrier_freq = MIN_FREQ + potFREQ;
+      }
+      setFreqs();
+    }
+  }
+  lastfreq = potFREQ;
+#endif
 
   // Everything else we update every cycle anyway
   mod_ratio = potMODR;

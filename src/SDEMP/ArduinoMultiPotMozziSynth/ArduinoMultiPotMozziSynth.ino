@@ -61,9 +61,9 @@
 #define INTS_PIN 1  // FM intensity
 #define RATE_PIN 2  // Modulation Rate
 #define MODR_PIN 3  // Modulation Ratio
-//#define AD_A_PIN 4  // ADSR Attack
-//#define AD_D_PIN 5  // ADSR Delay
-#define FREQ_PIN 4  // Optional Frequency Control
+#define AD_A_PIN 4  // ADSR Attack
+#define AD_D_PIN 5  // ADSR Delay
+//#define FREQ_PIN 4  // Optional Frequency Control
 
 // Default potentiometer values if no pot defined
 #define DEF_potWAVT 2

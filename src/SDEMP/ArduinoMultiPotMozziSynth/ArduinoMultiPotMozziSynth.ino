@@ -55,6 +55,7 @@
 //#define MIDI_PASS_THRU 1
 
 #define POT_ZERO 15 // Anything below this value is treated as "zero"
+//#define POT_REVERSE 1 // Uncomment if you want to reverse the direction of the pots
 
 // Set up the analog inputs - comment out if you aren't using this one
 #define WAVT_PIN 0  // Wavetable
@@ -244,6 +245,14 @@ void setWavetable() {
   }
 }
 
+int myAnalogRead (int pot) {
+#ifdef POT_REVERSE
+  return 1023 - mozziAnalogRead(pot);
+#else
+  return mozziAnalogRead(pot);
+#endif
+}
+
 void updateControl(){
 #ifndef TEST_NOTE
   MIDI.read();
@@ -256,14 +265,14 @@ void updateControl(){
   switch (potcount) {
   case 0:
 #ifdef WAVT_PIN
-    potWAVT = mozziAnalogRead(WAVT_PIN) >> 8; // value is 0-3
+    potWAVT = myAnalogRead(WAVT_PIN) >> 8; // value is 0-3
 #else
     potWAVT = DEF_potWAVT;
 #endif
     break;
   case 1:
 #ifdef INTS_PIN
-    potINTS = mozziAnalogRead(INTS_PIN); // value is 0-1023
+    potINTS = myAnalogRead(INTS_PIN); // value is 0-1023
     if (potINTS<POT_ZERO) potINTS = 0;
 #else
     potINTS = DEF_potINTS;
@@ -271,7 +280,7 @@ void updateControl(){
     break;
   case 2:
 #ifdef RATE_PIN
-    potRATE = mozziAnalogRead(RATE_PIN); // value is 0-1023
+    potRATE = myAnalogRead(RATE_PIN); // value is 0-1023
     if (potRATE<POT_ZERO) potRATE = 0;
 #else
     potRATE = DEF_potRATE;
@@ -279,27 +288,27 @@ void updateControl(){
     break;
   case 3:
 #ifdef MODR_PIN
-    potMODR = mozziAnalogRead(MODR_PIN) >> 7; // value is 0-7
+    potMODR = myAnalogRead(MODR_PIN) >> 7; // value is 0-7
 #else
     potMODR = DEF_potMODR;
 #endif
     break;
   case 4:
 #ifdef AD_A_PIN
-    potAD_A = mozziAnalogRead(AD_A_PIN) >> 3; // value is 0-255
+    potAD_A = myAnalogRead(AD_A_PIN) >> 3; // value is 0-255
 #else
     potAD_A = ADSR_A;
 #endif
     break;
   case 5:
 #ifdef AD_D_PIN
-    potAD_D = mozziAnalogRead(AD_D_PIN) >> 3; // value is 0-255
+    potAD_D = myAnalogRead(AD_D_PIN) >> 3; // value is 0-255
 #else
     potAD_D = ADSR_D;
 #endif
   case 6:
 #ifdef FREQ_PIN
-    potFREQ = mozziAnalogRead(FREQ_PIN); // value is 0-1023
+    potFREQ = myAnalogRead(FREQ_PIN); // value is 0-1023
 #else
     potFREQ = 0; // Disabled
 #endif

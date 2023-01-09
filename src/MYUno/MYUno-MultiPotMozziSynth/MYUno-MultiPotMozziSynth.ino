@@ -2,7 +2,7 @@
 // Simple DIY Electronic Music Projects
 //    diyelectromusic.wordpress.com
 //
-//  Make Your Uno Synth - Note Melody
+//  Make Your Uno Synth - Mozzi FM Synth
 //  https://diyelectromusic.wordpress.com/2023/01/05/arduino-make-your-uno-synth/
 //
       MIT License

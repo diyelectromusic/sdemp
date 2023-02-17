@@ -6,7 +6,7 @@
 #
 #      MIT License
 #      
-#      Copyright (c) 2020 diyelectromusic (Kevin)
+#      Copyright (c) 2023 diyelectromusic (Kevin)
 #      
 #      Permission is hereby granted, free of charge, to any person obtaining a copy of
 #      this software and associated documentation files (the "Software"), to deal in
@@ -72,6 +72,10 @@ MIDIRT = [
     [6, 0x90, 0, 4], # NoteOn on CH 6 on port 0 to port 5
      ]
 
+# Configure a default route, to be used in the case
+# of no other matches.  Set to -1 to disable.
+MIDIDEF = -1
+
 def midiRouter(s_ch,s_cmd,s_src):
     d_dst = []
     
@@ -90,6 +94,11 @@ def midiRouter(s_ch,s_cmd,s_src):
                     print ("[",s_ch,",",s_cmd,",",s_src,"]\tMatched route: [",ch,",",cmd,",",src,",",dst,"] --> ", dst)
                     d_dst.append(dst)
     
+    if (not d_dst)
+        if (MIDIDEF != -1):
+            # Return the default route if one is configured
+            d_dst.append(MIDIDEF)
+
     # Return the destinations found, eliminating duplicates
     return set(d_dst)
 
@@ -177,7 +186,8 @@ def pio_midi_send(pio_uart, cmd, ch, b1, b2):
     b0 = cmd + ch-1
     sm.put(b0)
     sm.put(b1)
-    sm.put(b2)
+    if b2 != -1:
+        sm.put(b2)
 
 def uart_midi_send(uart, cmd, ch, b1, b2):
     if (b2 == -1):

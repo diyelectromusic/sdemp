@@ -7,7 +7,7 @@
 //
       MIT License
       
-      Copyright (c) 2022 diyelectromusic (Kevin)
+      Copyright (c) 2023 diyelectromusic (Kevin)
       
       Permission is hereby granted, free of charge, to any person obtaining a copy of
       this software and associated documentation files (the "Software"), to deal in
@@ -41,6 +41,8 @@
 
 //#define TEST 1
 //#define DDSDBG 1
+
+#define MIDILED LED_BUILTIN
 
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the Arduino built-in serial port
@@ -190,6 +192,23 @@ const int PROGMEM sinetable[128] = {
 // This is the actual wavetable used
 int8_t wavetable[256];
 
+void ledInit() {
+#ifdef MIDILED
+  pinMode(MIDILED, OUTPUT);
+  ledOff();
+#endif
+}
+void ledOn() {
+#ifdef MIDILED
+  digitalWrite(MIDILED, HIGH);
+#endif
+}
+void ledOff() {
+#ifdef MIDILED
+  digitalWrite(MIDILED, LOW);
+#endif
+}
+
 // These are the functions to be called on recieving certain MIDI events.
 // Full documentation of how to do this is provided here:
 // https://github.com/FortySevenEffects/arduino_midi_library/wiki/Using-Callbacks
@@ -214,6 +233,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
   }
 
   playnote = pitch;
+  ledOn();
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
@@ -227,6 +247,7 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   if (playnote == pitch) {
     // This is our note, so turn it off
     playnote = 0;
+      ledOff();
   }
 }
 
@@ -234,6 +255,8 @@ void setup() {
 #ifdef TEST
   Serial.begin(9600);
 #endif
+    
+  ledInit();
 
   // Initialise our output pins
   DDRD |= 0b11111100;
@@ -388,8 +411,8 @@ void ddsOutput () {
   // much considered minor adjustments really, so it shouldn't
   // be too noticeable.
   //
-  uint8_t pd = wave & 0b11111100;
-  uint8_t pb = wave & 0b00000011;
+  uint8_t pd = (PIND & 0b00000011) | (wave & 0b11111100);
+  uint8_t pb = (PINB & 0b11111100) | (wave & 0b00000011);
   PORTD = pd;
   PORTB = pb;
 

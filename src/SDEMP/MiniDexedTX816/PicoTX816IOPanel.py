@@ -341,21 +341,29 @@ def scanSwitches():
         if swtime > SWLONGPRESS and longpresssw[sw] == 0:
             #print (sw, "-> Long Press")
             longpresssw[sw] = 1
-            changeMode(sw)
+            #changeMode(sw)
+            changeIndCommon(sw)
     elif lastswreading[sw] == 0 and swreading[sw] == 1:
         # Switch goes LOW to HIGH - i.e. released
         swtime = ticks_ms() - swtimes[sw]
         #print (sw, ": ", lastswreading[sw], "->", swreading[sw], "time: ", swtime)
         if swtime < SWSHORTPRESS:
-            if swvalues[sw] == 1:
-                midiSetInd(sw+1) # Set to "Individual"
-                swvalues[sw] = 2
-            else:
-                midiSetCommon(sw+1) # Set to "Common"
-                swvalues[sw] = 1
-        # Long Press already handled in the LOW staying LOW case
+            changeMode(sw)
+            #changeIndCommon(sw)
+        else:
+            # Long Press already handled in the LOW staying LOW case
+            pass
 
     lastswreading[sw] = swreading[sw]
+
+def changeIndCommon(sw):
+    global swvalues
+    if swvalues[sw] == 1:
+        midiSetInd(sw+1) # Set to "Individual"
+        swvalues[sw] = 2
+    else:
+        midiSetCommon(sw+1) # Set to "Common"
+        swvalues[sw] = 1
 
 # -----------------------------------------------
 #

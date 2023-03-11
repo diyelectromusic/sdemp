@@ -64,6 +64,7 @@ int notes[] = {
   NOTE_C8, NOTE_CS8, NOTE_D8, NOTE_DS8
 };
 int numnotes;
+int playing;
 
 void ledOff () {
 #ifdef MIDI_LED
@@ -96,14 +97,17 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
 
   ledOn();
   tone (SPEAKER, notes[pitch-MIDI_NOTE_START]);
+  playing = pitch;
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
-  // There is no special handling here.
-  // If we receive a note off event just turn off all notes.
-  noTone(SPEAKER);
-  ledOff();
+  // If we receive a note off event for the playing note, turn it off
+  if (pitch == playing) {
+    noTone(SPEAKER);
+    ledOff();
+    playing = 0;
+  }
 }
 
 void setup() {

@@ -58,37 +58,69 @@ from rp2 import PIO, StateMachine, asm_pio
 import ustruct
 import SimpleMIDIDecoder
 
-# Specify the MIDI channel map.
-# NB: Tone generators are only on channels 1-8
+# -----------------------------------------------
+#
+#  A note on indexing used in this code:
+#   Tone Generators: 1-8
+#   MIDI IN channels: 1-16
+#   Tone Generator MIDI OUT channels: 2-9
+#   Switches/pots/leds: 0-7
+#
+#  The TG MIDI OUT channels MUST match the
+#  MiniDexed performance configuration.
+#  The required configuration has TGs 1-8 mapped
+#  onto MIDI channels 2-9.
+#
+#  MIDI IN channels are mapped onto TGs via the
+#  MIDIRT structure below and this is configurable.
+#
+#  The MIDI IN channel to use for the "common"
+#  mode is also configurable via MIDICOMCH below.
+#
+#  It is assumed that sw/pot/leds 0-7 correspond
+#  to TGs 1-8 throughout.
+#
+# -----------------------------------------------
+
+
+
+# Specify the MIDI channel map: maps input MIDI channels to TGs.
+# NB: Tone generators are numbered 1-8
 #     0 = "don't route".
 #
-# So TG numbers and OUT MIDI CHs are the same (1-8)
-# but IN MIDI CHs still come in as 1-16.
+# TG numbers are mapped onto MIDI OUT channels seperately.
+# Note: MIDI IN channels are 1-16.
 #
-# NB: This is the Lo-Fi Orchestra mapping...
 MIDIRT = [
-#  TG    CH
+#  TG     MIDI CH
     0, #  Dummy to allow 1-based index
-    1, #  1 Brass
-    2, #  2 Flute
-    2, #  3 Flute
-    4, #  4 Reeds
-    4, #  5 Reeds
-    6, #  6 Guitar
-    7, #  7 Bass
-    5, #  9 Timpani
-    8, #  8 Glock/Vibes
-    0, # 10 Drums
-    3, # 11 Strings
-    3, # 12 Strings
-    3, # 13 Strings
-    3, # 14 Strings
-    0, # 15 n/a
-    0, # 16 n/a
+    0, #  1 - used for "common" mode
+    1, #  2 
+    2, #  3 
+    3, #  4 
+    4, #  5 
+    5, #  6 
+    6, #  7 
+    7, #  8 
+    8, #  9 
+    0, # 10 
+    0, # 11 
+    0, # 12 
+    0, # 13 
+    0, # 14 
+    0, # 15 
+    0, # 16 
     ]
 
 MIDICOMCH = 1 # IN MIDI CH to use for "Common"
-#MIDICOMCH = 16 # IN MIDI CH to use for "Common"
+
+# Define the mapping of TG to MIDI OUT channels.
+# This has to match the performance.ini settings
+# within MiniDexed.
+#
+# NB: Index=0 is a dummy value to permit the
+#     use of TG 1-8 as the index.
+MIDITG = [0,2,3,4,5,6,7,8,9]
 
 # -----------------------------------------------
 #
@@ -98,8 +130,10 @@ MIDICOMCH = 1 # IN MIDI CH to use for "Common"
 uart0 = UART(0,31250)
 uart1 = UART(1,31250)
 
-def uart_midi_send(cmd, ch, b1, b2):
-    midiActivity(ch)
+# This works on TGs mapped over to "real" MIDI channels.
+def uart_midi_send(cmd, tg, b1, b2):
+    midiActivity(tg)
+    ch = MIDITG[tg] # Channels 1-16
     if (b2 == -1):
         uart1.write(ustruct.pack("bb",cmd+ch-1,b1))
     else:
@@ -120,6 +154,8 @@ MIDI_CC_DETUNE  = 94  # Effect 4 Depth maps onto master tuning for a TG
 # Any in common are played via MIDICOMCH regardless of the MIDIRT settings above.
 #
 # NB: Index 0 = "global" indication.
+#     Index 1-8 map onto individual TGs
+#
 MIDICOMMON = [False, False, False, False, False, False, False, False, False]
 
 def midiSetCommon (tg):
@@ -135,6 +171,7 @@ def midiSetInd (tg):
     # then set idx [0] to False as a "short cut"
     MIDICOMMON[0] = (sum(MIDICOMMON[1::]) > 0)
 
+# Input is MIDI IN ch data received on
 def midiSendToCommon (cmd, ch, b1, b2):
     # If "common" routing is required on any TG
     # the idx 0 will be True
@@ -146,16 +183,18 @@ def midiSendToCommon (cmd, ch, b1, b2):
             #     one of the TGs themselves...
             #     In this case, they are basically always
             #     in "common" mode...
-            if MIDICOMMON[tg] or tg==MIDICOMCH:
+            if MIDICOMMON[tg] or MIDITG[tg]==MIDICOMCH:
                 uart_midi_send(cmd, tg, b1, b2)
                 commonRouted = True
     return commonRouted
 
+# Input is MIDI IN ch data received on
 def midiSendToInd (cmd, ch, b1, b2):
     # Only individually send if "common" routing
     # for this TG is not enabled.
-    if not MIDICOMMON[MIDIRT[ch]]:
-        uart_midi_send(cmd, MIDIRT[ch], b1, b2)
+    tg = MIDIRT[ch]
+    if not MIDICOMMON[tg]:
+        uart_midi_send(cmd, tg, b1, b2)
 
 
 # -----------------------------------------------
@@ -164,6 +203,7 @@ def midiSendToInd (cmd, ch, b1, b2):
 #
 # -----------------------------------------------
 
+# Input is MIDI IN ch data received on
 def doMidiNoteOn(ch,cmd,note,vel,uart):
     # Only interested in incoming MIDI on uart 0
     if uart == 0:
@@ -171,22 +211,25 @@ def doMidiNoteOn(ch,cmd,note,vel,uart):
             # need to locally route
             midiSendToInd(cmd, ch, note, vel)
 
+# Input is MIDI IN ch data received on
 def doMidiNoteOff(ch,cmd,note,vel,uart):
     # Only interested in incoming MIDI on uart 0
     if uart == 0:
         if not midiSendToCommon(cmd, ch, note, vel):
             midiSendToInd(cmd, ch, note, vel)
 
+# Input is MIDI IN ch data received on
 def doMidiThru(ch,cmd,d1,d2,uart):
     # Only interested in incoming MIDI on uart 0
     if uart == 0:
         # NB: The Ind/Common only applies to notes
+        tg = MIDIRT[ch]
         if (d2 == -1):
-            #print(ch, MIDIRT[ch],"\tThru\t", hex(cmd>>4), "\t", d1)
-            uart_midi_send(cmd, MIDIRT[ch], d1, 0)
+            #print(ch, tg, MIDITG[tg],"\tThru\t", hex(cmd>>4), "\t", d1)
+            uart_midi_send(cmd, tg, d1, 0)
         else:
-            #print(ch, MIDIRT[ch],"\tThru\t", hex(cmd>>4), "\t", d1, "\t", d2)
-            uart_midi_send(cmd, MIDIRT[ch], d1, d2)
+            #print(ch, tg, MIDITG[tg],"\tThru\t", hex(cmd>>4), "\t", d1, "\t", d2)
+            uart_midi_send(cmd, tg, d1, d2)
 
 def doMidiSysEx(data, uart):
     # Process returning SysEx messages on uart 1
@@ -210,16 +253,16 @@ def doMidiSysEx(data, uart):
         pass
 
 # NB: This uses TG channels directly, so no additional routing required
-def injectMidiPC(ch,pc):
-    midiActivity(ch)
-    #print(ch, ch, "\tProgramChange:\t", pc)
-    uart_midi_send(0xC0, ch, pc, -1)
+def injectMidiPC(tg,pc):
+    midiActivity(tg)
+    #print(tg, MIDITG[tg], "\tProgramChange:\t", pc)
+    uart_midi_send(0xC0, tg, pc, -1)
 
 # NB: This uses TG channels directly, so no additional routing required
-def injectMidiCC(ch,cc,dd):
-    midiActivity(ch)
-    #print(ch, ch, "\tControlChange:\t", cc, dd)
-    uart_midi_send(0xB0, ch, cc, dd)
+def injectMidiCC(tg,cc,dd):
+    midiActivity(tg)
+    #print(tg, MIDITG[tg], "\tControlChange:\t", cc, dd)
+    uart_midi_send(0xB0, tg, cc, dd)
 
 md = []
 for i in range(2):
@@ -387,11 +430,11 @@ def flashLeds():
             flashing = [0,0,0,0,0,0,0,0]
         ledtick = LEDTICK + ticks_ms()
 
-def midiActivity(ch):
+def midiActivity(tg):
     global midiactivity
-    if ch > 0 and ch <=8:
-        midiactivity[ch-1] = 0 # On
-        miditicks[ch-1] = MIDITICK + ticks_ms()
+    if tg > 0 and tg <=8:
+        midiactivity[tg-1] = 0 # On
+        miditicks[tg-1] = MIDITICK + ticks_ms()
 
 def midiActivityTO():
     # See if we need to "time out" the MIDI activity indicator
@@ -473,7 +516,8 @@ def changeMode(sw):
 
 # Note: potval comes in as "MIDI scale" so 0..127
 
-midiVoice = [0,0,0,0,0,0,0,0]
+# Dummy index 0, so tg=1-8
+midiVoice = [0,0,0,0,0,0,0,0,0]
 def setMidiVoice (tg, potval):
     global midiVoice
     # Scale to 0..31
@@ -487,7 +531,8 @@ def getMidiVoiceDisplay (tg):
     # Voice is 0..31 but display shows 1..32
     return 1+midiVoice[tg]
 
-midiVolume = [127,127,127,127,127,127,127,127]
+# Dummy index 0, so tg=1-8
+midiVolume = [0,127,127,127,127,127,127,127,127]
 def setMidiVolume (tg, potval):
     global midiVolume
     # Use directly as 0..127
@@ -501,7 +546,8 @@ def getMidiVolumeDisplay (tg):
     # Volume is 0..127, but display only shows 1..64
     return 1+int(midiVolume[tg]/2)
 
-midiBank = [0,0,0,0,0,0,0,0]
+# Dummy index 0, so tg=1-8
+midiBank = [0,0,0,0,0,0,0,0,0]
 def setMidiBank (tg, potval):
     global midiBank
     # Scale to 0..7
@@ -519,7 +565,8 @@ def getMidiBankDisplay (tg):
 # But only a subset is supported here for slight
 # detuning effects...
 # Supports +/- 15
-midiDetune = [0,0,0,0,0,0,0,0]
+# Dummy index 0, so tg=1-8
+midiDetune = [0,0,0,0,0,0,0,0,0]
 def setMidiDetune (tg, potval):
     global midiDetune
     # Scale to 0..31 then offset
@@ -564,14 +611,16 @@ displayupdated = False
 
 def potDisplay(pot):
     # Some modes return a hex display, some decimal
+    # Pot (0-7) -> MIDI TG (1-8)
+    tg = pot+1
     if uimode[pot] == 1:
-        return "%02d" % getMidiVolumeDisplay(pot)
+        return "%02d" % getMidiVolumeDisplay(tg)
     elif uimode[pot] == 2:
-        return "%02x" % getMidiBankDisplay(pot)
+        return "%02x" % getMidiBankDisplay(tg)
     elif uimode[pot] == 3:
-        return "%02x" % getMidiDetuneDisplay(pot)
+        return "%02x" % getMidiDetuneDisplay(tg)
     else:
-        return "%02d" % getMidiVoiceDisplay(pot)
+        return "%02d" % getMidiVoiceDisplay(tg)
 
 def scanPots():
     global pot, displayupdated, potreading, lastpotreading, checkpotreading, checkpotreading2, checkreading3, displaytext
@@ -609,30 +658,28 @@ def scanPots():
             # Action depends on uimode[]
             #print (pot, "->", potreading[pot])
 
+            # Pot (0-7) -> MIDI TG (1-8)
+            tg = pot+1
             if uimode[pot] == 1:
                 # Volume mode:
-                # Pot (0-7) -> MIDI TG/CH (1-8)
                 # Value (0-1023) -> MIDI data (0-127)
-                setMidiVolume(pot, potreading[pot])
-                injectMidiCC(pot+1, MIDI_CC_VOLUME, getMidiVolume(pot))
+                setMidiVolume(tg, potreading[pot])
+                injectMidiCC(tg, MIDI_CC_VOLUME, getMidiVolume(tg))
             elif uimode[pot] == 2:
                 # Bank Select:
-                # Pot (0-7) -> MIDI TG/CH (1-8)
                 # Value (0-1023) -> MIDI data (0-7)
-                setMidiBank(pot, potreading[pot])
-                injectMidiCC(pot+1, MIDI_CC_BANKSEL, getMidiBank(pot))
+                setMidiBank(tg, potreading[pot])
+                injectMidiCC(tg, MIDI_CC_BANKSEL, getMidiBank(tg))
             elif uimode[pot] == 3:
                 # Bank Select:
-                # Pot (0-7) -> MIDI TG/CH (1-8)
                 # Value (0-1023) -> Detune (-99 to 99) -> MIDI data (0-127)
-                setMidiDetune(pot, potreading[pot])
-                injectMidiCC(pot+1, MIDI_CC_DETUNE, getMidiDetune(pot))
+                setMidiDetune(tg, potreading[pot])
+                injectMidiCC(tg, MIDI_CC_DETUNE, getMidiDetune(tg))
             else:
                 # Normal mode: MIDI Voice/Program Change
-                # Pot (0-7) -> MIDI TG/CH (1-8)
                 # Value (0-1023) -> MIDI data (0-31)
-                setMidiVoice(pot, potreading[pot])
-                injectMidiPC(pot+1, getMidiVoice(pot))
+                setMidiVoice(tg, potreading[pot])
+                injectMidiPC(tg, getMidiVoice(tg))
 
     # Sort of "debounce" the readings
     checkpotreading3[pot] = checkpotreading2[pot]

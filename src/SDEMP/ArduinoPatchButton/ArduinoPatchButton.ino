@@ -39,7 +39,7 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 int btnPin = 16;      // Use 3-13 for the Arduino Uno or Nano; For Wemos D1 Mini, 16 = D0
-int midiPatch   = 51; // Define the patch number - 51 is Tuba in the General MIDI standard.
+int midiPatch   = 59; // Define the patch number (1-128) - 59 is Tuba in the General MIDI standard.
 int midiChannel = 1;  // Define which MIDI channel to transmit on (1 to 16).
 
 void setup() {
@@ -64,8 +64,10 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   if (digitalRead (btnPin) == HIGH) {
-    // Send our MIDI message to change the patch number
-    MIDI.sendProgramChange (midiPatch, midiChannel);
+    // Send our MIDI message to change the patch number.
+    // MIDI presents voices as numbers 1-128 to the user
+    // but they need converting to 0-127 for sending.
+    MIDI.sendProgramChange (midiPatch-1, midiChannel);
 
     // Include a short delay so the switch isn't continuously read and triggered
     delay (500);

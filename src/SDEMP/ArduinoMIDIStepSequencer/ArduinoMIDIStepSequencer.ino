@@ -34,6 +34,7 @@
 #include <MIDI.h>
 
 #define NUM_POTS 8  // Starting at A0
+int pots[NUM_POTS] = {A0, A1, A2, A3, A4, A5, A6, A7};
 #define MIN_POT_READING 4 // Value for the lowest note
 
 // This is required to set up the MIDI library.
@@ -78,7 +79,7 @@ void loop() {
   }
 
   // Take the reading for this pot
-  int potReading = analogRead (A0+playingNote);
+  int potReading = analogRead (pots[playingNote]);
 
   // if the reading is zero (or almost zero), turn off any playing note
   if (potReading < MIN_POT_READING) {

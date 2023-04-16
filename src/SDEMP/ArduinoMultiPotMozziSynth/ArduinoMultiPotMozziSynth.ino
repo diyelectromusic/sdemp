@@ -309,6 +309,7 @@ void updateControl(){
   case 6:
 #ifdef FREQ_PIN
     potFREQ = myAnalogRead(FREQ_PIN); // value is 0-1023
+    if (potFREQ<POT_ZERO) potFREQ = 0;
 #else
     potFREQ = 0; // Disabled
 #endif

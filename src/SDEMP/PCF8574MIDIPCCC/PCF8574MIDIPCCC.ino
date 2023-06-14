@@ -2,7 +2,7 @@
 // Simple DIY Electronic Music Projects
 //    diyelectromusic.wordpress.com
 //
-//  Arduino PCF8574 MIDI Program and Control Messenger
+//  Arduino PCF8574/8575 MIDI Program and Control Messenger
 //  https://diyelectromusic.wordpress.com/2023/06/04/arduino-pcf8574-midi-controller/
 //
       MIT License
@@ -46,12 +46,13 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define MIDI_LED     LED_BUILTIN
 
 // PCF8574 I2C IO Expander
-#define PCF8574_ADDR  0x20
-#define PCF8574_CLOCK 100000
-#define PCF8574_DEVICES 3  // Assumed to be on consecutive addresses
+#define PCF857x_ADDR  0x20
+#define PCF857x_CLOCK 100000
+#define PCF857x_DEVICES 3  // Assumed to be on consecutive addresses
+#define PCF857x_BITS  8  // 8 for PCF8574 or 16 for PCF8575
 
 // MIDI Actions to take on each button
-#define NUM_BTNS (PCF8574_DEVICES*8)
+#define NUM_BTNS (PCF857x_DEVICES*PCF857x_BITS)
 #define MB_CC 0
 #define MB_PC 1
 #define MB_N  2
@@ -83,8 +84,8 @@ MB_CC, 81,  // Generic On/Off
 MB_CC, 82,  // Generic On/Off
 };
 
-uint8_t midibtns[PCF8574_DEVICES];
-uint8_t midibtns_last[PCF8574_DEVICES];
+uint16_t midibtns[PCF857x_DEVICES];
+uint16_t midibtns_last[PCF857x_DEVICES];
 
 void midiBtnOn (int btn) {
   if (btn >= NUM_BTNS) return;
@@ -162,63 +163,71 @@ void setup() {
 #else
   MIDI.begin(MIDI_CHANNEL);
 #endif
-  pcf8574Setup();
+  pcf857xSetup();
 }
 
 void loop() {
 #ifdef TEST
-  pcf8574Test();
+  pcf857xTest();
 #else
   MIDI.read();  // Allows MIDI THRU processing
 #endif
-  for (int d=0; d<PCF8574_DEVICES; d++) {
-    midibtns[d] = pcf8574Read(d);
+  for (int d=0; d<PCF857x_DEVICES; d++) {
+    midibtns[d] = pcf857xRead(d);
 
-    for (int i=0; i<8; i++) {
+    for (int i=0; i<PCF857x_BITS; i++) {
       if ((midibtns[d] & (1<<i)) && !(midibtns_last[d] & (1<<i))) {
         // LOW->HIGH transition
-        midiBtnOff(d*8+i);
+        midiBtnOff(d*PCF857x_BITS+i);
       } else if (!(midibtns[d] & (1<<i)) && (midibtns_last[d] & (1<<i))) {
         // HIGH->LOW transition
-        midiBtnOn(d*8+i);
+        midiBtnOn(d*PCF857x_BITS+i);
       }
     }
     midibtns_last[d] = midibtns[d];
   }
 }
 
-void pcf8574Setup() {
+void pcf857xSetup() {
   Wire.begin();
-  Wire.setClock(PCF8574_CLOCK);
+  Wire.setClock(PCF857x_CLOCK);
 
   byte error;
 
-  for (int d=0; d<PCF8574_DEVICES; d++) {
-    Wire.beginTransmission(PCF8574_ADDR+d);
+  for (int d=0; d<PCF857x_DEVICES; d++) {
+    Wire.beginTransmission(PCF857x_ADDR+d);
     error = Wire.endTransmission();
     if (error == 0) {
 #ifdef TEST
        Serial.print("I2C Device found at 0x");
-       Serial.println(PCF8574_ADDR+d, HEX);
+       Serial.println(PCF857x_ADDR+d, HEX);
 #endif
     }
   }
 }
 
-uint8_t pcf8574Read(int device) {
-  if (Wire.requestFrom(PCF8574_ADDR+device, 1) != 0) {
-    return (uint8_t)Wire.read();
-  } else {
-    return -1;
+uint16_t pcf857xRead(int device) {
+#if (PCF857x_BITS==8)
+  if (Wire.requestFrom(PCF857x_ADDR+device, 1) != 0) {
+    return (uint16_t)Wire.read();
   }
+#elif (PCF857x_BITS==16)
+  if (Wire.requestFrom(PCF857x_ADDR+device, 2) != 0) {
+    uint16_t retval = (uint16_t)Wire.read();
+    return retval + (((uint16_t)Wire.read())<<8);
+  }
+#else
+#error PCF857x_BITS must be 8 or 16
+#endif  
+  return -1;
 }
 
-void pcf8574Test () {
+void pcf857xTest () {
 #ifdef TEST
-  for (int d=0; d<PCF8574_DEVICES; d++) {
+  for (int d=0; d<PCF857x_DEVICES; d++) {
     uint8_t val = midibtns[d];
-    for (int i=0; i<8; i++) {
-      if (val & (1<<(7-i))) {
+    for (int i=0; i<PCF857x_BITS; i++) {
+      if (val & (1<<(PCF857x_BITS-1-i))) {
         Serial.print("1");
       } else {
         Serial.print("0");

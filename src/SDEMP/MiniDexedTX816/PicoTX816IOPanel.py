@@ -57,6 +57,7 @@ from time import sleep, ticks_ms
 from rp2 import PIO, StateMachine, asm_pio
 import ustruct
 import SimpleMIDIDecoder
+from midirt import MIDIRT, MIDICOMCH
 
 # -----------------------------------------------
 #
@@ -81,38 +82,6 @@ import SimpleMIDIDecoder
 #  to TGs 1-8 throughout.
 #
 # -----------------------------------------------
-
-
-
-# Specify the MIDI channel map: maps input MIDI channels to TGs.
-# NB: Tone generators are numbered 1-8
-#     0 = "don't route".
-#
-# TG numbers are mapped onto MIDI OUT channels seperately.
-# Note: MIDI IN channels are 1-16.
-#
-MIDIRT = [
-#  TG     MIDI CH
-    0, #  Dummy to allow 1-based index
-    0, #  1 - used for "common" mode
-    1, #  2 
-    2, #  3 
-    3, #  4 
-    4, #  5 
-    5, #  6 
-    6, #  7 
-    7, #  8 
-    8, #  9 
-    0, # 10 
-    0, # 11 
-    0, # 12 
-    0, # 13 
-    0, # 14 
-    0, # 15 
-    0, # 16 
-    ]
-
-MIDICOMCH = 1 # IN MIDI CH to use for "Common"
 
 # Define the mapping of TG to MIDI OUT channels.
 # This has to match the performance.ini settings
@@ -222,14 +191,13 @@ def doMidiNoteOff(ch,cmd,note,vel,uart):
 def doMidiThru(ch,cmd,d1,d2,uart):
     # Only interested in incoming MIDI on uart 0
     if uart == 0:
-        # NB: The Ind/Common only applies to notes
-        tg = MIDIRT[ch]
-        if (d2 == -1):
-            #print(ch, tg, MIDITG[tg],"\tThru\t", hex(cmd>>4), "\t", d1)
-            uart_midi_send(cmd, tg, d1, 0)
-        else:
-            #print(ch, tg, MIDITG[tg],"\tThru\t", hex(cmd>>4), "\t", d1, "\t", d2)
-            uart_midi_send(cmd, tg, d1, d2)
+        # NB: This assumes all MIDI THRU messages are
+        #     channel messages, but the MIDI decoder
+        #     only decodes channel messages to the THRU
+        #     function anyway...
+        if not midiSendToCommon(cmd, ch, d1, d2):
+            # need to locally route
+            midiSendToInd(cmd, ch, d1, d2)
 
 def doMidiSysEx(data, uart):
     # Process returning SysEx messages on uart 1

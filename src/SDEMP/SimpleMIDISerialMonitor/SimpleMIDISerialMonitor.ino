@@ -132,39 +132,55 @@ void ledInit() {
 void setup() {
   // Using the standard serial link for the "monitor"
   Serial.begin(9600);
+  Serial.print("MIDI Monitor Starting on ");
   ledInit();
 
   // Initialise all INPUT devices to listen on all channels.
   // Disable the THRU for all devices.
 #ifdef MIDI_HW_SERIAL2
+  Serial.print("HW-SERIAL2 ");
   MIDI_HS2.begin(MIDI_CHANNEL_OMNI);
   MIDI_HS2.turnThruOff();
+  MIDI_HS2.setHandleSystemExclusive(printMidiSysEx);
 #endif
 #ifdef MIDI_HW_SERIAL3
+  Serial.print("HW-SERIAL3 ");
   MIDI_HS3.begin(MIDI_CHANNEL_OMNI);
   MIDI_HS3.turnThruOff();
+  MIDI_HS3.setHandleSystemExclusive(printMidiSysEx);
 #endif
 #ifdef MIDI_HW_SERIAL4
+  Serial.print("HW-SERIAL4 ");
   MIDI_HS4.begin(MIDI_CHANNEL_OMNI);
   MIDI_HS4.turnThruOff();
+  MIDI_HS4.setHandleSystemExclusive(printMidiSysEx);
 #endif
 #ifdef MIDI_SW_SERIAL
+  Serial.print("SW-SERIAL ");
   MIDI_SS.begin(MIDI_CHANNEL_OMNI);
   MIDI_SS.turnThruOff();
+  MIDI_SS.setHandleSystemExclusive(printMidiSysEx);
 #endif
 #ifdef MIDI_SW_SERIAL2
+  Serial.print("SW-SERIAL2 ");
   MIDI_SS2.begin(MIDI_CHANNEL_OMNI);
   MIDI_SS2.turnThruOff();
+  MIDI_SS2.setHandleSystemExclusive(printMidiSysEx);
 #endif
 #ifdef MIDI_USB_HOST
+  Serial.print("USB-Host ");
   MIDI_UH.begin(MIDI_CHANNEL_OMNI);
   MIDI_UH.turnThruOff();
+  MIDI_UH.setHandleSystemExclusive(printMidiSysEx);
   Usb.Init();  
 #endif
 #ifdef MIDI_USB_DEVICE
+  Serial.print("USB-Device ");
   MIDI_UD.begin(MIDI_CHANNEL_OMNI);
   MIDI_UD.turnThruOff();
+  MIDI_UD.setHandleSystemExclusive(printMidiSysEx);
 #endif
+  Serial.print("\n");
 }
 
 void loop() {
@@ -295,4 +311,24 @@ void printMidiMsg (uint8_t cmd, uint8_t d1, uint8_t d2, uint8_t ch) {
       break;
   }
   Serial.print("\n");
+}
+
+void printMidiSysEx (byte *inArray, unsigned inSize) {
+  Serial.print("SysEx Array size = ");
+  Serial.println(inSize);
+  int idx=0;
+  for (int i=0; i<inSize; i++) {
+   if (inArray[i] < 16) {
+     Serial.print("0");
+   }
+   Serial.print(inArray[i], HEX);
+   idx++;
+   if (idx >= 16) {
+     Serial.print("\n");
+     idx = 0;
+   }
+  }
+  if (idx != 0) {
+    Serial.print("\n");
+  }
 }

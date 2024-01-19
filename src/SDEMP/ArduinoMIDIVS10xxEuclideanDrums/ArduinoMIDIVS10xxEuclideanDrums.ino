@@ -47,10 +47,19 @@
 #include <MIDI.h>
 #include "vs10xx_uc.h" // From VLSI website: http://www.vlsi.fi/en/support/software/microcontrollersoftware.html
 
-#include "euclid.h"
+//#include "euclid.h"
 
 // the pattern generator
-euclid euc;
+//euclid euc;
+#define NUMBER_OF_STEPS 32
+
+// Euclidean sequences
+bool euclidianPattern[NUMBER_OF_STEPS+1];
+uint8_t stepCounter;
+uint8_t numberOfSteps;
+uint8_t numberOfFills = 6;
+
+
 
 #define TEST 1
 
@@ -90,10 +99,15 @@ uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 
 // Comment out any of these if not in use
 //#define POT_MIDI  A0 // MIDI control
-#define POT_VOL   A1 // Volume control
+#define POT_VOL   A2 // Volume control
+
+// POTs to control which set of drums and tempo
+#define POT_KIT   A1
+#define POT_TEMPO A0
+#define POT_FILLS A3    
 
 // Channel to link to the potentiometer (1 to 16)
-#define POT_MIDI_CHANNEL 1
+#define POT_MIDI_CHANNEL 10
 
 #ifdef VS1053_MP3_SHIELD
 // VS1053 Shield pin definitions
@@ -104,7 +118,7 @@ uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 #endif
 #ifdef VS1003_MODULE
 // VS1003 Module pin definitions
-#define VS_XCS    10 //8 // Control Chip Select Pin (for accessing SPI Control/Status registers)
+#define VS_XCS    9 //8 // Control Chip Select Pin (for accessing SPI Control/Status registers)
 #define VS_XDCS   6 // 9 // Data Chip Select / BSYNC Pin
 #define VS_DREQ   7 // Data Request Pin: Player asks for more data
 #define VS_RESET  8 // 10 // Reset is active low
@@ -133,41 +147,72 @@ uint16_t MIDI_CHANNEL_FILTER = 0b1111111111111111;
 // 0 means "ignore"
 //
 byte preset_instruments[16] = {
-/* 01 */  1,
-/* 02 */  9,
-/* 03 */  17,
-/* 04 */  25,
-/* 05 */  30,
-/* 06 */  33,
-/* 07 */  41,
-/* 08 */  49,
-/* 09 */  57,
-/* 10 */  0,  // Channel 10 will be ignored later as that is percussion anyway.
-/* 11 */  65,
-/* 12 */  73,
-/* 13 */  81,
-/* 14 */  89,
-/* 15 */  113,
-/* 16 */  48
+  /* 01 */  1,
+  /* 02 */  9,
+  /* 03 */  17,
+  /* 04 */  25,
+  /* 05 */  30,
+  /* 06 */  33,
+  /* 07 */  41,
+  /* 08 */  49,
+  /* 09 */  57,
+  /* 10 */  0,  // Channel 10 will be ignored later as that is percussion anyway.
+  /* 11 */  65,
+  /* 12 */  73,
+  /* 13 */  81,
+  /* 14 */  89,
+  /* 15 */  113,
+  /* 16 */  48
 };
 
 // This is required to set up the MIDI library.
 // The default MIDI setup uses the built-in serial port.
 MIDI_CREATE_DEFAULT_INSTANCE();
 
+// Defaults, but will be overridden by POT settings if enabled
+uint16_t volume = 0;
+uint16_t tempo  = 120;
 byte instrument;
-byte volume;
+
 
 #ifdef TEST
 char teststr[32];
 #endif
 
-void setup() {
+#define KIT 4
 
-#ifndef TEST
+#define VS1003_D_BASS     35   // 35 36 86 87
+#define VS1003_D_SNARE    38   // 38 40
+#define VS1003_D_HHC      42   // 42 44 71 80 // good
+#define VS1003_D_HHO      46   // 46 55 58 72 74 81 // long siss
+#define VS1003_D_HITOM    50   // 48 50
+#define VS1003_D_LOTOM    45   // 41 43 45 47
+#define VS1003_D_CRASH    57   // 49 57
+#define VS1003_D_RIDE     51   // 34 51 52 53 59
+#define VS1003_D_TAMB     54   // 39 54
+#define VS1003_D_HICONGA  62   // 60 62 65 78
+#define VS1003_D_LOCONGA  64   // 61 63 64 66 79
+#define VS1003_D_MARACAS  70   // 27 29 30 69 70 73 82 
+#define VS1003_D_CLAVES   75   // 28 31 32 33 37 56 67 68 75 76 77 83 84 85
+
+int kits[KIT][13]={
+  { 64, 38, 42, 46, 35, 38, 64, 46, 42, 62, 64, 62, 42 }, // not bad
+  { 35, 38, 35, 42, 42, 43, 38, 51, 46, 64, 75, 70, 42 }, // not bad
+  { 35, 38, 42, 40, 64, 42, 70, 42, 46, 62, 64, 35, 42 }, // little more on the snare side/ HH, lo & hi conga, and maracas
+  { 35, 38, 42, 42, 35, 42, 64, 42, 46, 38, 75, 64, 42 }, // little more on the snare side/ HH, lo conga, one clave hit
+  }; // Bass, Snare, HHO, HHC
+
+int kit = 0;
+
+
+
+
+void setup() {
+  
+//#ifndef TEST
   Serial.begin(9600);
   Serial.println ("Initialising VS10xx");
-#endif // TEST
+//#endif // TEST
 
 #ifdef VS_VCC
   pinMode(VS_VCC, OUTPUT);
@@ -197,28 +242,26 @@ void setup() {
   MIDI.begin(MIDI_CHANNEL_OMNI);
 #endif // TEST
 
-  delay(500);
+  delay(200);
 
 #ifdef SOUND_CHECK
   // A test "output" to see if the VS0xx is working ok
-#ifdef POT_MIDI
-  byte ch = POT_MIDI_CHANNEL-1;
-#else  // POT_MIDI
-  byte ch = 0;
-#endif // POT_MIDI
-  for (byte i=60; i<73; i++) {
-    talkMIDI (0x90|ch, i, 127);
-    delay (100);
-    talkMIDI (0x80|ch, i, 0);
-    delay (200);
-  }
-  for (byte i=40; i<50; i++) {
-    talkMIDI (0x99, i, 127);
-    delay (100);
-    talkMIDI (0x89, i, 0);
-    delay (200);    
+  for ( byte i = 27; i < 87;i++){
+
+      int rr = random(13);
+      int note = kits[kit][rr];
+      talkMIDI (0x99, i, 127);
+      delay (100);
+      talkMIDI (0x89, note, 0);
+      //delay (500);
   }
 #endif // SOUND_CHECK
+
+#ifndef TEST
+  Serial.println ("Step");
+  Serial.println ( getCurrentStep() );
+  Serial.println ( getStepNumber() );
+#endif   
 
   // Configure the instruments for all required MIDI channels.
   // Even though MIDI channels are 1 to 16, all the code here
@@ -243,83 +286,135 @@ void setup() {
 
   // Set these invalid to trigger a read of the pots
   // (if being used) first time through.
-  instrument = -1;
+
+  // Set these invalid to trigger a read of the pots
+  // (if being used) first time through.
+#ifdef POT_TEMPO
+  tempo  = -1;
+#endif
+#ifdef POT_VOL
   volume = -1;
+#endif
+
+//Euclidean sequences
+generateSequence(8, 31);
 
 
-// Euclidean sequences
-euc.generateSequence(16,31);
-
-
-  
 }
 /* from the euclidiean attiny
- *  
-uint8_t analogPins[3]={A1,A2,A3};
-uint8_t _xor;
-int _val;
-uint8_t counter;
-bool clkState;
-bool rstState;
-uint8_t address=0;
-uint8_t steps,fills, lastSteps, lastFills;
+
+  uint8_t analogPins[3]={A1,A2,A3};
+  uint8_t _xor;
+  int _val;
+  uint8_t counter;
+  bool clkState;
+  bool rstState;
+  uint8_t address=0;
+  uint8_t steps,fills, lastSteps, lastFills;
+  bool butState;
+  uint8_t clkCounter;
+  bool usePin[4]={  true,false,true,true };
+*/
+
+
+
+uint8_t steps, fills, lastSteps, lastFills;
 bool butState;
-uint8_t clkCounter;
-bool usePin[4]={  true,false,true,true };
- */
-uint8_t steps,fills, lastSteps, lastFills;
-bool butState;
-uint8_t clkCounter =0;
- 
+uint8_t clkCounter = 0;
+uint8_t instrs;
+uint8_t timings;
+unsigned long nexttick;
+int loopstate;
+
+// main loop
 void loop() {
-  // put your main code here, to run repeatedly:
-  if( clkCounter == 31) {
-    instrument = random(15) + 8;
-    euc.generateSequence(16,31);
-    clkCounter = 0;
-  }
 
-#ifndef TEST
-  Serial.println ("Step");
-  Serial.println ( euc.getCurrentStep() );
-  Serial.println ( euc.getStepNumber() );
+#ifdef TEST
+  //Serial.println ( getCurrentStep());
+  //Serial.println ( getStepNumber() );
 #endif
-  euc.doStep();
-  clkCounter++;
-  
 
-  // Read the potentiometer for a value between 0 and 127
-  // to use to select the instrument in the general MIDI bank
-  // for POT_MIDI_CHANNEL (if POT_MIDI is defined).
-#ifdef POT_MIDI
-  byte pot1 = analogRead (POT_MIDI) >> 3;
-  if (pot1 != instrument) {
-    // Change the instrument to play
-#ifdef VS1003_MODULE
-    // The VS1003 has a limited set of instruments to choose from
-    // So convert 0 to 127 into 0 to VS1003VOICES-1
-    int voice = ((int)pot1)/(128/VS1003VOICES);
-    if (voice >= VS1003VOICES) voice = VS1003VOICES-1;
-    instrument = vs1003voices[voice];
-#else
-    instrument = pot1;
-#endif // VS1003_MODULE
+  // Only play the note in the pattern if we've met the criteria for
+  // the next "tick" happening.
+  unsigned long timenow = millis();
+  if (timenow >= nexttick) {
+    nexttick = millis() + (unsigned long)(1000/(tempo/60))/24.0;
+    //currentTime = micros();
+    //midIntervall = (1000/(bpm/60.0))/24.0;//set the midi clock using ref to bpm
+      
+     //if ((currentTime - pastTime) > midIntervall*1000) {
+     // usbMIDI.sendRealTime(CLOCK);
+      
+    //Serial.println ( nexttick );
+    //Serial.println ( timenow );
+    // check if we've hit the end of a 32 step pattern
+    // if so, new pattern. reset counter.
     
-    talkMIDI(0xC0 | (POT_MIDI_CHANNEL-1), instrument, 0);
-  }
-#endif // POT_MIDI
+    if ( clkCounter == 31) {
+      //instrument = random(15) + 8;
+      generateSequence(numberOfFills, 31);
+      clkCounter = 0;
+    }
 
-    if(euc.getCurrentStep() ) {
-      int note = random(45)+30;
-      talkMIDI (0x99, note, 127 - (random(50)));
+    if (getCurrentStep() ) {
+
+      int rr = random(13); // should use length of [kit]
+      int note = kits[kit][rr];
+      //Serial.println ( note);
+      //int note = random(45)+30;
+      // we're addding a bit of randomness to velocity
+      talkMIDI (0x99, note, 127 - (random(20)));
       delay (100);
       talkMIDI (0x89, note, 0);
-      delay (50); 
+      //delay (50);
     }
- 
+    // generate the current step 0/1, increment counter
+    doStep();
+    clkCounter++;
+    
+  }
+  
+  if (loopstate == 0) {
+    // Read the potentiometer for a value between 0 and 127
+    // to use to select the instrument in the general MIDI bank
+    // for POT_MIDI_CHANNEL (if POT_MIDI is defined).
+    
+#ifdef POT_KIT
+    int pot0 = map(analogRead(POT_KIT), 0, 1023, 0, KIT);
+    if (pot0 != kit) {
+      kit = pot0;
+    }    
+#endif // POT_KIT
 
-  // Read the potentiometer to set the volume
-  // (if POT_VOL is defined).
+#ifdef POT_FILLS
+    int pot3 = map(analogRead(POT_FILLS), 0, 1023, 2, 17);
+    if (pot3 != numberOfFills) {
+      numberOfFills = pot3;  // Number of fills 4-16
+    }
+    
+#endif // POT_TEMPO
+  }
+
+
+  else if (loopstate == 1) {
+#ifdef POT_TEMPO
+    // Read the potentiometer for a value between 0 and 255.
+    // This will be converted into a delay to be used to control the tempo.
+    //int pot1 = 20 + (analogRead (POT_TEMPO) >> 2);
+    int pot1 = map(analogRead(POT_TEMPO), 0, 1023, 40, 320);
+    if (pot1 != tempo) {
+      tempo = pot1;  // Tempo range is 20 to 275.
+      // Reset the tick on changing the tempo
+      //      nexttick = 0;
+    }
+
+#endif // POT_TEMPO
+
+
+
+  } else 
+  if (loopstate == 2) {
+    
 #ifdef POT_VOL
   // Need a value between 0 and 254 for the volume
   byte pot2 = analogRead (POT_VOL) >> 2;
@@ -339,47 +434,114 @@ void loop() {
   }
 #endif // POT_VOL
 
-  // If we have MIDI data then forward it on.
-  // Based on the DualMerger.ino example from the MIDI library.
-  //
-  if (MIDI.read()) {
-#ifdef MIDI_LED
-    digitalWrite(MIDI_LED, HIGH);
-#endif // MIDI_LED
-    // Extract the channel and type to build the command to pass on
-    // Recall MIDI channels are in the range 1 to 16, but will be
-    // encoded as 0 to 15.
-    //
-    // All commands in the range 0x80 to 0xE0 support a channel.
-    // Any command 0xF0 or above do not (they are system messages).
-    // 
-    byte ch = MIDI.getChannel();
-    uint16_t ch_filter = 1<<(ch-1);  // bit numbers are 0 to 15; channels are 1 to 16
-    if (ch == 0) ch_filter = 0; // special case - always ignore system messages where ch==0
-    if (MIDI_CHANNEL_FILTER & ch_filter) {
-      byte cmd = MIDI.getType();
-      if ((cmd >= 0x80) && (cmd <= 0xE0)) {
-        // Merge in the channel number
-        cmd |= (ch-1);
+
+#ifdef TEST
+  //Serial.println ("TEMPO");
+  Serial.println ( tempo);
+  //Serial.println ("KIT");
+  Serial.println ( kit);
+  Serial.println ("FILLS");
+  Serial.println ( numberOfFills);
+#endif
+
+  }
+  loopstate++;
+  if (loopstate > 2) loopstate = 0;
+
+
+
+
+}
+
+// Euclidean rythm algos
+uint8_t getStepNumber(){return stepCounter;};
+uint8_t getNumberOfFills(){return numberOfFills;};
+  
+void generateSequence( uint8_t fills, uint8_t steps){
+  numberOfSteps=steps;
+  if(fills>steps) fills=steps;
+  if(fills<=steps){
+  for(int i=0;i<32;i++) euclidianPattern[i]=false;
+    if(fills!=0){
+      euclidianPattern[0]=true;
+      float coordinate=(float)steps/(float)fills;
+      float whereFloat=0;
+      while(whereFloat<steps){
+        uint8_t where=(int)whereFloat;
+        if((whereFloat-where)>=0.5) where++;
+        euclidianPattern[where]=true;
+        whereFloat+=coordinate;
       }
-      talkMIDI(cmd, MIDI.getData1(), MIDI.getData2());
     }
-#ifdef MIDI_LED
-    digitalWrite(MIDI_LED, LOW);
-#endif // MIDI_LED
   }
 }
 
+void generateRandomSequence( uint8_t fills, uint8_t steps){
+  //if(numberOfSteps!=steps && numberOfFills!=fills){
+    numberOfSteps=steps;
+    numberOfFills=fills;
+    if(fills>steps) fills=steps;
+    if(fills<=steps){
+    for(int i=0;i<32;i++) euclidianPattern[i]=false;
+    //euclidianPattern[17]=true;
+      if(fills!=0){
+      //  euclidianPattern[0]=true;
+        //Serial.println();
+        for(int i=0;i<fills;i++){
+          uint8_t where;
+          //if(euclidianPattern[where]==false) euclidianPattern[where]=true;//, Serial.print(where);
+          //else{
+          while(1) {
+            where=random(steps);
+            if(euclidianPattern[where]==false){
+              euclidianPattern[where]=true;//,Serial.print(where),Serial.print(" ");
+              break;
+            }
+
+          }
+          //}
+        }
+        //Serial.println();
+      }
+    }
+  //}
+}
+
+
+void rotate(uint8_t _steps){
+  for(int i=0;i<_steps;i++){
+    bool temp=euclidianPattern[numberOfSteps];
+    for(int j=numberOfSteps;j>0;j--){
+      euclidianPattern[j]=euclidianPattern[j-1];
+    }
+    euclidianPattern[0]=temp;
+  }
+}
+bool getStep(uint8_t _step){
+  return euclidianPattern[_step];
+}
+bool getCurrentStep(){
+  return euclidianPattern[stepCounter];
+}
+void doStep(){
+  if(stepCounter<(numberOfSteps-1)) stepCounter++;
+  else stepCounter=0;
+}
+
+void resetSequence(){
+  stepCounter=0;
+}
+
 /***********************************************************************************************
- * 
- * Here is the code to send MIDI data to the VS1053 over the SPI bus.
- *
- * Taken from MP3_Shield_RealtimeMIDI.ino by Matthias Neeracher
- * which was based on Nathan Seidle's Sparkfun Electronics example code for the Sparkfun 
- * MP3 Player and Music Instrument shields and and VS1053 breakout board.
- *
+
+   Here is the code to send MIDI data to the VS1053 over the SPI bus.
+
+   Taken from MP3_Shield_RealtimeMIDI.ino by Matthias Neeracher
+   which was based on Nathan Seidle's Sparkfun Electronics example code for the Sparkfun
+   MP3 Player and Music Instrument shields and and VS1053 breakout board.
+
  ***********************************************************************************************
- */
+*/
 void sendMIDI(byte data) {
   SPI.transfer(0);
   SPI.transfer(data);
@@ -394,11 +556,11 @@ void talkMIDI(byte cmd, byte data1, byte data2) {
   digitalWrite(VS_XDCS, LOW);
 
   sendMIDI(cmd);
-  
-  //Some commands only have one data byte. All cmds less than 0xBn have 2 data bytes 
+
+  //Some commands only have one data byte. All cmds less than 0xBn have 2 data bytes
   //(sort of: http://253.ccarh.org/handout/midiprotocol/)
   // SysEx messages (0xF0 onwards) are variable length but not supported at present!
-  if( (cmd & 0xF0) <= 0xB0 || (cmd & 0xF0) >= 0xE0) {
+  if ( (cmd & 0xF0) <= 0xB0 || (cmd & 0xF0) >= 0xE0) {
     sendMIDI(data1);
     sendMIDI(data2);
   } else {
@@ -410,21 +572,21 @@ void talkMIDI(byte cmd, byte data1, byte data2) {
 
 
 /***********************************************************************************************
- * 
- * Code from here on is the magic required to initialise the VS10xx and 
- * put it into real-time MIDI mode using an SPI-delivered patch.
- * 
- * Here be dragons...
- * 
- * Based on VS1003b/VS1033c/VS1053b Real-Time MIDI Input Application
- * http://www.vlsi.fi/en/support/software/vs10xxapplications.html
- *
- * With some input from MP3_Shield_RealtimeMIDI.ino by Matthias Neeracher
- * which was based on Nathan Seidle's Sparkfun Electronics example code for the Sparkfun 
- * MP3 Player and Music Instrument shields and and VS1053 breakout board.
- * 
+
+   Code from here on is the magic required to initialise the VS10xx and
+   put it into real-time MIDI mode using an SPI-delivered patch.
+
+   Here be dragons...
+
+   Based on VS1003b/VS1033c/VS1053b Real-Time MIDI Input Application
+   http://www.vlsi.fi/en/support/software/vs10xxapplications.html
+
+   With some input from MP3_Shield_RealtimeMIDI.ino by Matthias Neeracher
+   which was based on Nathan Seidle's Sparkfun Electronics example code for the Sparkfun
+   MP3 Player and Music Instrument shields and and VS1053 breakout board.
+
  ***********************************************************************************************
- */
+*/
 
 void initialiseVS10xx () {
   // Set up the pins controller the SPI link to the VS1053
@@ -457,8 +619,8 @@ void initialiseVS10xx () {
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
 
-  //From page 12 of datasheet, max SCI reads are CLKI/7. Input clock is 12.288MHz. 
-  //Internal clock multiplier is 1.0x after power up. 
+  //From page 12 of datasheet, max SCI reads are CLKI/7. Input clock is 12.288MHz.
+  //Internal clock multiplier is 1.0x after power up.
   //Therefore, max SPI speed is 1.75MHz. We will use 1MHz to be safe.
   SPI.setClockDivider(SPI_CLOCK_DIV16); //Set SPI bus speed to 1MHz (16MHz / 16 = 1MHz)
   SPI.transfer(0xFF); //Throw a dummy byte at the bus
@@ -470,7 +632,7 @@ void initialiseVS10xx () {
   VSReadRegister(SCI_MODE);
 
   // Perform software reset and initialise VS mode
-  VSWriteRegister16(SCI_MODE, SM_SDINEW|SM_RESET);
+  VSWriteRegister16(SCI_MODE, SM_SDINEW | SM_RESET);
   delay(200);
   VSStatus();
 #ifdef TEST
@@ -487,7 +649,7 @@ void initialiseVS10xx () {
   VSStatus();
 
   // Set the default volume
-//  VSWriteRegister(SCI_VOL, 0x20, 0x20);  // 0 = Maximum; 0xFEFE = silence
+  //  VSWriteRegister(SCI_VOL, 0x20, 0x20);  // 0 = Maximum; 0xFEFE = silence
   VSStatus();
 }
 
@@ -498,11 +660,11 @@ void VSStatus (void) {
 #ifdef TEST
   // Print out some of the VS10xx registers
   uint16_t vsreg = VSReadRegister(SCI_MODE); // MODE Mode Register
-  sprintf(teststr, "Mode=0x%04x b",vsreg);
+  sprintf(teststr, "Mode=0x%04x b", vsreg);
   Serial.print(teststr);
   Serial.println(vsreg, BIN);
   vsreg = VSReadRegister(SCI_STATUS);
-  sprintf(teststr, "Stat=0x%04x b",vsreg);
+  sprintf(teststr, "Stat=0x%04x b", vsreg);
   Serial.print(teststr);
   Serial.print(vsreg, BIN);
   switch (vsreg & SS_VER_MASK) {
@@ -517,24 +679,24 @@ void VSStatus (void) {
     default: Serial.println(" (Unknown)"); break;
   }
   vsreg = VSReadRegister(SCI_VOL); // VOL Volume
-  sprintf(teststr, "Vol =0x%04x\n",vsreg);
+  sprintf(teststr, "Vol =0x%04x\n", vsreg);
   Serial.print(teststr);
   vsreg = VSReadRegister(SCI_AUDATA); // AUDATA Misc Audio data
-  sprintf(teststr, "AUDA=0x%04x (%uHz)\n",vsreg,(vsreg&0xFFFE));
+  sprintf(teststr, "AUDA=0x%04x (%uHz)\n", vsreg, (vsreg & 0xFFFE));
   Serial.print(teststr);
   Serial.println();
 #endif
 }
 
-// This sends a special sequence of bytes to the device to 
+// This sends a special sequence of bytes to the device to
 // get it to output a test sine wave.
 //
 // See the datasheets for details.
 //
 void VSSineTest () {
-  VSWriteRegister16(SCI_MODE, SM_SDINEW|SM_RESET|SM_TESTS);
+  VSWriteRegister16(SCI_MODE, SM_SDINEW | SM_RESET | SM_TESTS);
   delay(100);
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
   digitalWrite(VS_XDCS, LOW); //Select control
 
   //Special 8-byte sequence to trigger a sine test
@@ -546,12 +708,12 @@ void VSSineTest () {
   SPI.transfer(0);
   SPI.transfer(0);
   SPI.transfer(0);
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
   digitalWrite(VS_XDCS, HIGH); //Deselect Control
 
   delay (2000);
 
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
   digitalWrite(VS_XDCS, LOW); //Select control
 
   //Special 8-byte sequence to disable the sine test
@@ -563,21 +725,21 @@ void VSSineTest () {
   SPI.transfer(0);
   SPI.transfer(0);
   SPI.transfer(0);
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
   digitalWrite(VS_XDCS, HIGH); //Deselect Control
 
   delay(100);
-  VSWriteRegister16(SCI_MODE, SM_SDINEW|SM_RESET);
+  VSWriteRegister16(SCI_MODE, SM_SDINEW | SM_RESET);
   delay(200);
 }
 
 // Write to VS10xx register
-// SCI: Data transfers are always 16bit. When a new SCI operation comes in 
+// SCI: Data transfers are always 16bit. When a new SCI operation comes in
 // DREQ goes low. We then have to wait for DREQ to go high again.
 // XCS should be low for the full duration of operation.
 //
-void VSWriteRegister(unsigned char addressbyte, unsigned char highbyte, unsigned char lowbyte){
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
+void VSWriteRegister(unsigned char addressbyte, unsigned char highbyte, unsigned char lowbyte) {
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
   digitalWrite(VS_XCS, LOW); //Select control
 
   //SCI consists of instruction byte, address byte, and 16-bit data word.
@@ -585,31 +747,31 @@ void VSWriteRegister(unsigned char addressbyte, unsigned char highbyte, unsigned
   SPI.transfer(addressbyte);
   SPI.transfer(highbyte);
   SPI.transfer(lowbyte);
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
   digitalWrite(VS_XCS, HIGH); //Deselect Control
 }
 
 // 16-bit interface to the above function.
 //
 void VSWriteRegister16 (unsigned char addressbyte, uint16_t value) {
-  VSWriteRegister (addressbyte, value>>8, value&0xFF);
+  VSWriteRegister (addressbyte, value >> 8, value & 0xFF);
 }
 
 // Read a VS10xx register using the SCI (SPI command) bus.
 //
 uint16_t VSReadRegister(unsigned char addressbyte) {
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating IC is available
   digitalWrite(VS_XCS, LOW); //Select control
-  
+
   SPI.transfer(0x03); //Read instruction
   SPI.transfer(addressbyte);
   delayMicroseconds(10);
   uint8_t d1 = SPI.transfer(0x00);
   uint8_t d2 = SPI.transfer(0x00);
-  while(!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
+  while (!digitalRead(VS_DREQ)) ; //Wait for DREQ to go high indicating command is complete
   digitalWrite(VS_XCS, HIGH); //Deselect control
 
-  return ((d1<<8) | d2);
+  return ((d1 << 8) | d2);
 }
 
 // Load a user plug-in over SPI.
@@ -620,13 +782,13 @@ void VSLoadUserCode(void) {
 #ifdef TEST
   Serial.print("Loading User Code");
 #endif
-  for (int i=0; i<VS10xx_CODE_SIZE; i++) {
+  for (int i = 0; i < VS10xx_CODE_SIZE; i++) {
     uint8_t addr = pgm_read_byte_near(&vs10xx_atab[i]);
     uint16_t dat = pgm_read_word_near(&vs10xx_dtab[i]);
 #ifdef TEST
-    if (!(i%8)) Serial.print(".");
-//    sprintf(teststr, "%4d --> 0x%04X => 0x%02x\n", i, dat, addr);
-//    Serial.print(teststr);
+    if (!(i % 8)) Serial.print(".");
+    //    sprintf(teststr, "%4d --> 0x%04X => 0x%02x\n", i, dat, addr);
+    //    Serial.print(teststr);
 #endif
     VSWriteRegister16 (addr, dat);
   }
@@ -655,19 +817,19 @@ void VSLoadUserCode(void) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void checkVoices () {
   // Voices to check - range 1 to 128
-  for (int i=120; i<129; i++) {
+  for (int i = 120; i < 129; i++) {
     Serial.print("Voice: ");
     Serial.println(i);
     testVoice(i);
-  }  
+  }
 }
 
 void probeVoice (int voice) {
-  int ins[]  = {  1,  9, 17, 25, 30, 33, 41, 49, 57, 65, 73, 81, 89,113}; // 1 to 128; change to 0 to 127 in msg
-  char vce[] = {'P','V','O','G','g','B','v','S','T','x','F','L','d','s'};
+  int ins[]  = {  1,  9, 17, 25, 30, 33, 41, 49, 57, 65, 73, 81, 89, 113}; // 1 to 128; change to 0 to 127 in msg
+  char vce[] = {'P', 'V', 'O', 'G', 'g', 'B', 'v', 'S', 'T', 'x', 'F', 'L', 'd', 's'};
   Serial.print("Probing voice: ");
   Serial.println(voice);
-  for (int i=0; i<(sizeof(ins)/sizeof(ins[0])); i++) {
+  for (int i = 0; i < (sizeof(ins) / sizeof(ins[0])); i++) {
     Serial.print("Voice: ");
     Serial.print(ins[i]);
     Serial.print(" ");
@@ -680,7 +842,7 @@ void probeVoice (int voice) {
 
 // voice is 1 to 128
 void testVoice (int voice) {
-  talkMIDI(0xC0, voice-1, 0);
+  talkMIDI(0xC0, voice - 1, 0);
   talkMIDI (0x90, 60, 127);
   delay(200);
   talkMIDI (0x90, 64, 127);

@@ -1,6 +1,6 @@
 # Arduino EPROM Reader
 
-Code for an Arduino EPROM reader based on the code and design by Ben Eater.
+Code for an Arduino EPROM reader based on the [code and design by Ben Eater](https://github.com/beneater/eeprom-programmer).
 
 More details here: tbd
 

@@ -132,6 +132,8 @@ void doTick () {
 }
 
 void setup() {
+  Serial.begin(9600);
+  delay(200);
   for (int i=0; i<NUMRELAYS; i++) {
     pinMode(relaypins[i], OUTPUT);
     relay[i] = LOW;
@@ -139,18 +141,29 @@ void setup() {
     relaymax[i] = 0;
     relaycnt[i] = 0;
   }
+  delay(200);
 
 #ifdef ALGMUX
   muxInit();
 #endif
+  // Perform a test read
+  scanPots();
 
   delay(1000);
   Timer1.initialize(TICK);
   Timer1.attachInterrupt(doTick);
 }
 
-void loop() {
+void scanPots () {
   for (int i=0; i<NUMPOTS && i<NUMRELAYS; i++) {
-    relaymax[i] = MINTICK + ALGREAD(pots[i]); // Value between 250 and 250+1023
+    int alg = ALGREAD(pots[i]);
+    relaymax[i] = MINTICK + alg; // Value between 250 and 250+1023
+    Serial.print(alg);
+    Serial.print("\t");
   }
+  Serial.print("\n");
+}
+
+void loop() {
+  scanPots();
 }

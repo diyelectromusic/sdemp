@@ -16,6 +16,10 @@ Be particularly wary about plugging any of these circuits described in these pro
 
 An old, second-hand or hand-me-down music keyboard, computer and amplification are well worth the investment for experimenting - that is what I use for everything.
 
+# Contributions
+
+This is the store for source code associated with my blog, so I'm not really after contributions at this time.  But feel free to get in touch if you spot something wrong! :)
+
 # License
 
 All code is provided AS IS with no implied fit for purpose as detailed in the included MIT License.

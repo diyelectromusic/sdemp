@@ -64,7 +64,13 @@
 #define MODR_PIN 3  // Modulation Ratio
 #define AD_A_PIN 4  // ADSR Attack
 #define AD_D_PIN 5  // ADSR Delay
-//#define FREQ_PIN 4  // Optional Frequency Control
+//#define AD_R_PIN 6  // ADSR Release
+//#define FREQ_PIN 7  // Optional Frequency Control
+
+//#define FREQ_CONT // No ADSR/Trigger - continuous output
+
+//#define TRIGGER_PIN  2  // Optional button trigger
+//#define TRIGGER_NOTE 60 // MIDI Note to play if button pressed
 
 // Default potentiometer values if no pot defined
 #define DEF_potWAVT 2
@@ -75,7 +81,7 @@
 // ADSR default parameters in mS
 #define ADSR_A       50
 #define ADSR_D      200
-#define ADSR_S    50000  // Large so the note will sustain unless a noteOff comes
+#define ADSR_S    60000  // Large so the note will sustain unless a noteOff comes
 #define ADSR_R      200
 #define ADSR_ALVL   250  // Level 0 to 255
 #define ADSR_DLVL    64  // Level 0 to 255
@@ -124,17 +130,18 @@ int mod_ratio;
 int mod_rate;
 int carrier_freq;
 long fm_intensity;
-int adsr_a, adsr_d;
+int adsr_a, adsr_d, adsr_r;
 int testcount;
 int playing;
 int lastfreq;
+int trigbtn;
 
 // smoothing for intensity to remove clicks on transitions
 float smoothness = 0.95f;
 Smooth <long> aSmoothIntensity(smoothness);
 
 int potcount;
-int potWAVT, potMODR, potINTS, potRATE, potAD_A, potAD_D, potFREQ;
+int potWAVT, potMODR, potINTS, potRATE, potAD_A, potAD_D, potAD_R, potFREQ;
 
 // envelope generator
 ADSR <CONTROL_RATE, AUDIO_RATE> envelope;
@@ -199,8 +206,13 @@ void setup(){
 #endif
 #endif
 
+#ifdef TRIGGER_PIN
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+#endif
+
   adsr_a = ADSR_A;
   adsr_d = ADSR_D;
+  adsr_r = ADSR_R;
   setEnvelope();
 
   mod_rate = -1;  // Force an update on first control scan...
@@ -217,7 +229,7 @@ void setup(){
 
 void setEnvelope() {
   envelope.setADLevels(ADSR_ALVL, ADSR_DLVL);
-  envelope.setTimes(adsr_a, adsr_d, ADSR_S, ADSR_R);
+  envelope.setTimes(adsr_a, adsr_d, ADSR_S, adsr_r);
 }
 
 void setFreqs(){
@@ -258,6 +270,23 @@ void updateControl(){
   MIDI.read();
 #endif
 
+#ifdef TRIGGER_PIN
+  int trig = digitalRead(TRIGGER_PIN);
+  if (trigbtn == HIGH && trig == LOW) {
+    // Button has been pressed
+    HandleNoteOn (MIDI_CHANNEL, TRIGGER_NOTE, 64);
+  }
+  else if (trigbtn == LOW && trig == HIGH) {
+    // Button has been released
+    HandleNoteOff (MIDI_CHANNEL, TRIGGER_NOTE, 0);
+  }
+  else
+  {
+    // Ignore button
+  }
+  trigbtn = trig;
+#endif
+
   // Read the potentiometers - do one on each updateControl scan.
   // Note: each potXXXX value is remembered between scans.
   potcount ++;
@@ -295,18 +324,24 @@ void updateControl(){
     break;
   case 4:
 #ifdef AD_A_PIN
-    potAD_A = myAnalogRead(AD_A_PIN) >> 3; // value is 0-255
+    potAD_A = myAnalogRead(AD_A_PIN); // value is 0-1023
 #else
     potAD_A = ADSR_A;
 #endif
     break;
   case 5:
 #ifdef AD_D_PIN
-    potAD_D = myAnalogRead(AD_D_PIN) >> 3; // value is 0-255
+    potAD_D = myAnalogRead(AD_D_PIN); // value is 0-1023
 #else
     potAD_D = ADSR_D;
 #endif
   case 6:
+#ifdef AD_R_PIN
+    potAD_R = myAnalogRead(AD_R_PIN); // value is 0-1023
+#else
+    potAD_R = ADSR_R;
+#endif
+  case 7:
 #ifdef FREQ_PIN
     potFREQ = myAnalogRead(FREQ_PIN); // value is 0-1023
     if (potFREQ<POT_ZERO) potFREQ = 0;
@@ -326,6 +361,7 @@ void updateControl(){
   Serial.print(potMODR); Serial.print("\t");
   Serial.print(potAD_A); Serial.print("\t");
   Serial.print(potAD_D); Serial.print("\t");
+  Serial.print(potAD_R); Serial.print("\t");
   Serial.print(potFREQ); Serial.print("\t");
 #endif
 #endif
@@ -338,11 +374,12 @@ void updateControl(){
   }
 
   // See if the envelope changed...
-  if ((potAD_A != adsr_a) || (potAD_D != adsr_d)) {
+  if ((potAD_A != adsr_a) || (potAD_D != adsr_d) || (potAD_R != adsr_r)) {
     // Change the envelope
     
     adsr_a = potAD_A;
     adsr_d = potAD_D;
+    adsr_r = potAD_R;
     setEnvelope();
   }
 
@@ -410,7 +447,11 @@ void updateControl(){
 
 int updateAudio(){
   long modulation = aSmoothIntensity.next(fm_intensity) * aModulator.next();
+#ifdef FREQ_CONT
+  return (int)(aCarrier.phMod(modulation));
+#else
   return (int)((envelope.next() * aCarrier.phMod(modulation)) >> 8);
+#endif
 }
 
 

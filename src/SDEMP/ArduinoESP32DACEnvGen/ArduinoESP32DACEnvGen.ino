@@ -34,6 +34,7 @@
 //#define TIMING_PIN 13
 //#define TEST
 //#define DUMPADSR
+//#define TESTTONE 19
 
 #define NUM_DAC_PINS 2  // Also the number of EGs possible
 int dac_pins[NUM_DAC_PINS] = {25, 26};
@@ -106,7 +107,7 @@ struct adsrEnv_s {
   uint16_t attack_ms;
   uint16_t attack_l;
   uint16_t delay_ms;
-  uint16_t sustain_l;
+  int32_t  sustain_l;
   uint16_t release_ms;
   bool gate;  
   adsr_t state;
@@ -114,6 +115,8 @@ struct adsrEnv_s {
 
 #define ATTACK_LEVEL 255  // Maximum level for attack
 #define ATTACK_LEVEL_88 (256*ATTACK_LEVEL) // In 8.8 format
+#define ATTACK_LEVEL_MIN 0   // Usually zero unless want a minimum value
+#define ATTACK_LEVEL_MIN_88  (256*ATTACK_LEVEL_MIN)  // In 8.8 format
 
 uint8_t nextADSR (unsigned ch) {
   if (ch >= NUM_DAC_PINS) {
@@ -162,7 +165,7 @@ uint8_t nextADSR (unsigned ch) {
       // NB: Start from whatever the current level is to allow for
       //     retriggering whilst previous envelope is still running...
       //     Still using same steps/timings though.
-      e->steps = (ATTACK_LEVEL_88 - 0) / e->attack_ms;
+      e->steps = (ATTACK_LEVEL_88 - ATTACK_LEVEL_MIN_88) / e->attack_ms;
       e->state = adsrAttack;
       break;
 
@@ -213,13 +216,13 @@ uint8_t nextADSR (unsigned ch) {
       break;
  
     case toRelease:
-      e->steps = (0 - e->env_l) / e->release_ms;
+      e->steps = (ATTACK_LEVEL_MIN_88 - e->env_l) / e->release_ms;
       e->state = adsrRelease;
       break;
  
     case adsrRelease:
       // Test for zero
-      if (e->env_l <= 0) {
+      if (e->env_l <= ATTACK_LEVEL_MIN_88) {
         // Envelope complete
         e->state = adsrReset;
       }
@@ -237,8 +240,8 @@ uint8_t nextADSR (unsigned ch) {
 
   // Update the envelope level according to the parameters set above.
   e->env_l = e->env_l + e->steps;
-  if (e->env_l < 0) {
-    e->env_l = 0;
+  if (e->env_l < ATTACK_LEVEL_MIN_88) {
+    e->env_l = ATTACK_LEVEL_MIN_88;
   }
   if (e->env_l > ATTACK_LEVEL_88) {
     e->env_l = ATTACK_LEVEL_88;
@@ -268,7 +271,7 @@ void setADSR (unsigned ch, unsigned pot, uint16_t potval) {
         env[ch].delay_ms = 1 + potval * 2;
         break;
       case 2: // S
-        env[ch].sustain_l = potval * 16; // 0..255 in 8.8 form: (val * 256) >> 4
+        env[ch].sustain_l = map (potval, 0, 4095, ATTACK_LEVEL_MIN_88, ATTACK_LEVEL_88); // 0..255 in 8.8 form: (val * 256) >> 4
         break;
       case 3: // R
         env[ch].release_ms = 1 + potval * 2;
@@ -289,6 +292,7 @@ void initADSR () {
     env[i].release_ms = 5000; // 500mS
     env[i].gate = false;    
     env[i].state = adsrReset;
+    env[i].env_l = ATTACK_LEVEL_MIN_88;
   }
 }
 
@@ -348,6 +352,10 @@ void setup () {
   digitalWrite(TIMING_PIN, LOW);
 #endif
 
+#ifdef TESTTONE
+  tone(TESTTONE, 440);
+#endif
+
   for (int i=0; i<NUM_DAC_PINS; i++) {
     pinMode (trig_pins[i], INPUT);
     lasttrig[i] = LOW;
@@ -355,8 +363,8 @@ void setup () {
     lastgate[i] = LOW;
 
     // Start with output at zero
-    sample[i] = 0;
-    dacWrite(dac_pins[i], 0);
+    sample[i] = ATTACK_LEVEL_MIN;
+    dacWrite(dac_pins[i], ATTACK_LEVEL_MIN);
     
     // Force a read of the ADCs on power up
     for (int p=0; p<NUM_ADC_PINS; p++) {

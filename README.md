@@ -10,6 +10,12 @@ To install all project files into your Arduino src area, select "code" and "down
 
 If you like what you see, you can buy me a Ko-Fi - https://ko-fi.com/diyelectromusic
 
+# Support
+
+I do not offer support for any of these projects, there are provided "as is" (see license).
+
+But I will attempt to answer any queries posted to a public forum.  More here: https://diyelectromusic.wordpress.com/support/.
+
 #  A Word of Caution!
 
 Be particularly wary about plugging any of these circuits described in these projects into your expensive computers, audio, musical or electronic equipment - I don't recommend it so you do so at your own risk! And make sure you double check everything first regardless. My background is embedded software and music, not electronics, so any electronics information I present is on a "well, I found it somewhere on the Internet and it sort of works for me" basis only!

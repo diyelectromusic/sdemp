@@ -30,6 +30,9 @@
 
 //#define TIMER_TOGGLE 2
 
+// Can do GATE or TRIGGER.  Uncomment for TRIGGER
+//#define TRIGGER_OUTPUT
+
 // -------------------------------------------
 //    Sequencer IO and Patterns
 // -------------------------------------------
@@ -142,12 +145,24 @@ void sequencerLoop (void) {
   //     all GATEs are OFF before the next step is played.
   tempoTickCnt--;
   if (tempoTickCnt == 1) {
-    // Ensure all gates are off for at least one TICK
+#ifdef TRIGGER_OUTPUT
+    // When in TRIGGER mode output for just one TICK
+    outputGates();
+#else
+    // When in GATE mode, need ot ensure
+    // all gates are off for at least one TICK
     clearGates();
+#endif
   }
   else if (tempoTickCnt == 0) {
-    // Output last GATE value
+#ifdef TRIGGER_OUTPUT
+    // When in TRIGGER mode clear outputs after just 1 TICK
+    clearGates();
+#else
+    // When in GATE mode output last GATE values
+    // and leave them on until next step
     outputGates();
+#endif
 
     // Process next gate value ready for next update
     updateGates();

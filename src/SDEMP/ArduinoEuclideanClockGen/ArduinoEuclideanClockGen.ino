@@ -90,9 +90,9 @@ bool patternStepOn (unsigned pattern, unsigned step) {
 //
 // For a tempo range of say 20-240 bpm that means each
 // step is running at around 80-960 steps-per-min
-// or around 3 to 32 steps a second.
+// or around 1.3 to 16 steps a second.
 //
-// So shortest step time interval is 1/32 second ~= 30mS
+// So shortest step time interval is 1/16 second ~= 63mS
 // Longest step time inteval is 1/2 to 1S = 500-1000mS
 //
 // The system will be running with a fixed "TICK"

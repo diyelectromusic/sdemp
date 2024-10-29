@@ -261,10 +261,20 @@ void uiUpdate (void) {
       if (uiFocus != 0) {
         display.drawRect (40,19,47,25, OLED_ON);
       }
+/*    This should work, but for some reason using setTextSize(2)
+      and print seems to leave artefacts on the display...
+      ---------------------
       display.setCursor (46,24);
       display.setTextSize(2);
       if (seqTempo < 100) display.print(" ");
       display.print(seqTempo);
+*/
+      // Note: default font has 6x8 characters, but we're using size=2
+      if (seqTempo >= 100) {
+         display.drawChar (46,24, '0'+seqTempo/100, OLED_ON, OLED_OFF, 2);
+      }
+      display.drawChar (46+12,24, '0'+(seqTempo/10)%10, OLED_ON, OLED_OFF, 2);
+      display.drawChar (46+24,24, '0'+seqTempo%10, OLED_ON, OLED_OFF, 2);
     }
 
     display.display();

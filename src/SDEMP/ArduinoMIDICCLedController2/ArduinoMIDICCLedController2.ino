@@ -34,8 +34,6 @@
 #include <MIDI.h>
 #include <Wire.h>
 #include "LEDRingSmall.h"
-#include <i2cEncoderMiniLib.h>
-#include <RotaryEncoder.h>
 
 //#define TEST
 
@@ -67,9 +65,23 @@
 #define PIN_ENC_A 11
 #define PIN_ENC_B 10
 
+// Pins for the endless potentiometer
+#define PIN_EALG_1 A1
+#define PIN_EALG_2 A2
+
 // Everything acts on and is driven by these values
 byte midiCC;
 byte lastMidiCC;
+
+#ifdef CC_I2CENCODER
+#include <i2cEncoderMiniLib.h>
+#endif
+#ifdef CC_ENCODER
+#include <RotaryEncoder.h>
+#endif
+#ifdef CC_ENDLESSPOT
+#include "EndlessPotentiometer.h"
+#endif
 
 #ifdef TEST
 #define dbegin(...) Serial.begin(__VA_ARGS__)
@@ -128,11 +140,10 @@ void midiControlChange(byte channel, byte control, byte value) {
   }
 }
 
+#ifndef TEST
 void midiSetup() {
   midiLedSetup();
-#ifndef TEST
   MIDI.begin(MIDI_CHANNEL);
-#endif
 
 #ifdef MIDI_THRU
   MIDI.turnThruOn();
@@ -150,7 +161,6 @@ void midiLoop() {
   midiLedLoop();
 
   if (lastMidiCC != midiCC) {
-#ifndef TEST
     // This will result in sending a MIDI CC as soon as midiCC changes
     // which could come from the encoder or from reciving a MIDI CC message.
     //
@@ -158,28 +168,37 @@ void midiLoop() {
     // have already been sent via the THRU mechanism by this point too
     // so this is a duplicate, but I'm not worrying about that...
     MIDI.sendControlChange(MIDI_CC, midiCC, MIDI_CHANNEL);
-#endif
   }
 }
-
-void midiCCIncrement() {
-  if (midiCC < 127) {
-    midiCC++;
-  } else {
-#ifdef CC_WRAP
-    midiCC = 0;
+#else
+void midiSetup() {}
+void midiLoop() {}
 #endif
-  }
-}
 
-void midiCCDecrement() {
-  if (midiCC > 0) {
-     midiCC--;
-  } else {
+void midiCCIncrement(int inc) {
 #ifdef CC_WRAP
+  midiCC += inc;
+  midiCC = midiCC % 128;
+#else
+  if (midiCC <= 127-inc) {
+    midiCC += inc;
+  } else {
     midiCC = 127;
-#endif
   }
+#endif
+}
+
+void midiCCDecrement(int dec) {
+#ifdef CC_WRAP
+  midiCC -= dec;
+  midiCC = midiCC % 128;
+#else
+  if (midiCC >= dec) {
+     midiCC -= dec;
+  } else {
+    midiCC = 0;
+  }
+#endif
 }
 
 //--------------------------------------------------
@@ -296,9 +315,9 @@ void encLoop() {
   if (new_pos != re_pos) {
     int re_dir = (int)encoder.getDirection();
     if (re_dir < 0) {
-      midiCCDecrement();
+      midiCCDecrement(1);
     } else if (re_dir > 0) {
-      midiCCIncrement();
+      midiCCIncrement(1);
     } else {
       // if re_dir == 0; do nothing
     }
@@ -311,10 +330,65 @@ void encLoop() {}
 #endif
 
 //--------------------------------------------------
+// Analog Averaging
+//--------------------------------------------------
+#define AVGEREADINGS 32
+
+class AvgePot {
+public:
+  AvgePot(int pot) {
+    potpin = pot;
+    for (int i=0; i<AVGEREADINGS; i++) {
+      avgepotvals[i] = 0;
+    }
+    avgepotidx = 0;
+    avgepottotal = 0;
+  }
+
+  int getPin () {
+    return potpin;
+  }
+
+  // Implement an averaging routine.
+  // NB: All values are x10 to allow for 1
+  //     decimal place of accuracy to allow
+  //     "round to nearest" rather the default
+  //     "round down" calculations, which gives
+  //     a much more stable result.
+  int avgeAnalogRead () {
+    int reading = 10*analogRead(potpin);
+    avgepottotal = avgepottotal - avgepotvals[avgepotidx];
+    avgepotvals[avgepotidx] = reading;
+    avgepottotal = avgepottotal + reading;
+    avgepotidx++;
+    if (avgepotidx >= AVGEREADINGS) avgepotidx = 0;
+    return (((avgepottotal / AVGEREADINGS) + 5) / 10);
+  }
+
+  int avgeAnalogRead (int pot) {
+    if (pot == potpin) {
+      return avgeAnalogRead();
+    }
+    return 0;
+  }
+
+private:
+  int potpin;
+  int avgepotvals[AVGEREADINGS];
+  int avgepotidx;
+  long avgepottotal;
+};
+
+int testAnalogRead(int pin) {
+  return 35;
+}
+
+//--------------------------------------------------
 // Plain Potentiometer
 //--------------------------------------------------
 #ifdef CC_POTENTIOMETER
 
+AvgePot algpot(PIN_ALG);
 int lastpot;
 void potSetup() {
   lastpot = -1;
@@ -326,7 +400,7 @@ void potLoop() {
   if (potcnt > 100) {
     potcnt = 0;
     // Convert 10-bit reading down to 7-bits
-    int newpot = avgeAnalogRead(PIN_ALG)>>3;
+    int newpot = algpot.avgeAnalogRead(PIN_ALG)>>3;
     // NB: Can't test against midiCC directly as
     //     it might get changed over MIDI and we
     //     don't want it to be immediatedly overwritten again.
@@ -335,27 +409,6 @@ void potLoop() {
       lastpot = newpot;
     }
   }
-}
-
-#define AVGEREADINGS 32
-int avgepotvals[AVGEREADINGS];
-int avgepotidx;
-long avgepottotal;
-
-// Implement an averaging routine.
-// NB: All values are x10 to allow for 1
-//     decimal place of accuracy to allow
-//     "round to nearest" rather the default
-//     "round down" calculations, which gives
-//     a much more stable result.
-int avgeAnalogRead (int pot) {
-  int reading = 10*analogRead(pot);
-  avgepottotal = avgepottotal - avgepotvals[avgepotidx];
-  avgepotvals[avgepotidx] = reading;
-  avgepottotal = avgepottotal + reading;
-  avgepotidx++;
-  if (avgepotidx >= AVGEREADINGS) avgepotidx = 0;
-  return (((avgepottotal / AVGEREADINGS) + 5) / 10);
 }
 #else
 void potSetup() {}
@@ -370,11 +423,11 @@ void potLoop() {}
 i2cEncoderMiniLib Encoder(0x20);
 
 void i2cEncIncrement(i2cEncoderMiniLib* obj) {
-  midiCCIncrement();
+  midiCCIncrement(1);
 }
 
 void i2cEncDecrement(i2cEncoderMiniLib* obj) {
-  midiCCDecrement();
+  midiCCDecrement(1);
 }
 
 void i2cEncSetup() {
@@ -410,12 +463,33 @@ void i2cEncLoop() {}
 //--------------------------------------------------
 #ifdef CC_ENDLESSPOT
 
+AvgePot epot1(PIN_EALG_1);
+AvgePot epot2(PIN_EALG_2);
+EndlessPotentiometer endpot;
+int lastendpot;
 void endpotSetup() {
-  
+  lastendpot = 0;
+  // For MIDI CC values
+  endpot.maxValue = 127;
+  endpot.minValue = 0;
+  endpot.sensitivity = 1;
+  endpot.threshold = 0;
 }
 
+int endpotcnt;
 void endpotLoop() {
-
+  endpotcnt++;
+  if (endpotcnt > 100) {
+    endpotcnt = 0;
+    endpot.updateValues(epot1.avgeAnalogRead(PIN_EALG_1), epot2.avgeAnalogRead(PIN_EALG_2));
+    if (endpot.isMoving) {
+      if (endpot.direction == endpot.CLOCKWISE) {
+        midiCCIncrement(endpot.valueChanged);
+      } else if (endpot.direction == endpot.COUNTER_CLOCKWISE) {
+        midiCCDecrement(endpot.valueChanged);
+      }
+    }
+  }
 }
 #else
 void endpotSetup() {}

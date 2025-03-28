@@ -94,7 +94,7 @@ def midiRouter(s_ch,s_cmd,s_src):
                     print ("[",s_ch,",",s_cmd,",",s_src,"]\tMatched route: [",ch,",",cmd,",",src,",",dst,"] --> ", dst)
                     d_dst.append(dst)
     
-    if (not d_dst)
+    if (not d_dst):
         if (MIDIDEF != -1):
             # Return the default route if one is configured
             d_dst.append(MIDIDEF)

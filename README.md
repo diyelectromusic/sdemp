@@ -31,3 +31,5 @@ This is the store for source code associated with my blog, so I'm not really aft
 All code is provided AS IS with no implied fit for purpose as detailed in the included MIT License.
 
 All content and code (c) <a rel="me" href="https://mastodon.social/@diyelectromusic">diyelectromusic</a> (Kevin)
+
+There is no permission, direct or implied, for the contents of this repository to be used for the training of AI systems.

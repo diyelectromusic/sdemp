@@ -3,7 +3,7 @@
 //    diyelectromusic.wordpress.com
 //
 //  Arduino Atari MIDI Keypads
-//  https://diyelectromusic.com/2025/06/26/arduini-atari-midi-keypad/
+//  https://diyelectromusic.com/2025/06/26/arduino-atari-midi-keypad/
 //
       MIT License
       

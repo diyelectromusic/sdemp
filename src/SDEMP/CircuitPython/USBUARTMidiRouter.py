@@ -43,7 +43,9 @@ uart = busio.UART(tx=board.TX, rx=board.RX, baudrate=31250, timeout=0.001)
 sermidi = adafruit_midi.MIDI(midi_in=uart, midi_out=uart)
 usbmidi = adafruit_midi.MIDI(midi_in=usb_midi.ports[0], midi_out=usb_midi.ports[1])
 
-led = digitalio.DigitalInOut(board.LED)
+# If one of these doesn't work or causes the board to hang, try the other!
+#led = digitalio.DigitalInOut(board.LED)
+led = digitalio.DigitalInOut(board.LED_INVERTED)
 led.direction = digitalio.Direction.OUTPUT
 led.value = True
 #led.value = False

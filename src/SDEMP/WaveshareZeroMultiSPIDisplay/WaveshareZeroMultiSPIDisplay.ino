@@ -114,19 +114,19 @@ int tftCS[NUM_TFTS] = {
 Adafruit_ST7735 *tft[NUM_TFTS];
 
 // Format is 16-bit 5-6-5 B-G-R
-#define BBV 11
-#define GBV  5
-#define RBV  0
-#define ST_COL(r,g,b) (((r&0x1F)<<RBV) | ((g&0x3F)<<GBV) | ((b&0x1F)<<BBV))
+// Allow 0..255 in component values, by only taking
+// most significant bits (5 or 6) from each value.
+//   bbbbbggggggrrrrr
+#define ST_COL(r,g,b) (((r&0xF8)>>3)|((g&0xFC)<<3)|((b&0xF8)<<8))
 #define ST_BLACK   ST_COL(0,0,0)
-#define ST_GREY    ST_COL(10,20,10)
-#define ST_WHITE   ST_COL(31,63,31)
-#define ST_BLUE    ST_COL(0,0,31)
-#define ST_GREEN   ST_COL(0,63,0)
-#define ST_RED     ST_COL(31,0,0)
-#define ST_YELLOW  ST_COL(31,63,0)
-#define ST_MAGENTA ST_COL(31,0,31)
-#define ST_CYAN    ST_COL(0,63,31)
+#define ST_GREY    ST_COL(64,64,64)
+#define ST_WHITE   ST_COL(255,255,255)
+#define ST_BLUE    ST_COL(0,0,255)
+#define ST_GREEN   ST_COL(0,255,0)
+#define ST_RED     ST_COL(255,0,0)
+#define ST_YELLOW  ST_COL(255,255,0)
+#define ST_MAGENTA ST_COL(255,0,255)
+#define ST_CYAN    ST_COL(0,255,255)
 
 #define NUM_COLS 8
 int colours[NUM_COLS] = {ST_GREY, ST_WHITE, ST_RED, ST_GREEN, ST_BLUE, ST_CYAN, ST_MAGENTA, ST_YELLOW};

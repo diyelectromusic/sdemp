@@ -23,14 +23,25 @@
 #include <TimerOne.h>
 #include "LEDPanel.h"
 
+// NOTE: Probably won't be able to do GOL alongside the others.
+//       The Arduino Uno will run out of memory and do weird things...
+//
+//#define DO_BRIGHTNESS
+//#define DO_LINES
+//#define DO_MANDEL
+#define DO_GOL
+
 void testBrightness (void) {
   delay(1000);
   panelClear(true);
+  delay(1000);
   for (int br=100; br>0; br-=10) {
     setBrightness(br);
+    panelClear(true);
     delay(1000);
   }
   panelClear();
+  delay(1000);
 }
 
 #define MAX_ITERATIONS 128
@@ -79,11 +90,14 @@ void mandel (void) {
   }
 }
 
-#define GOL_COL led_green
-#define GOL_OFF led_black
+#define GOL_COLS 8
+panelcolour golcols[GOL_COLS] = {led_green, led_red, led_magenta, led_cyan, led_yellow, led_white, led_blue, led_black};
+#define GOL_COL golcols[0]
+#define GOL_OFF golcols[GOL_COLS-1]
 #define GOL_X 64
 #define GOL_Y 52
-#define GOL_ITERATIONS 500
+#define GOL_ITERATIONS 1000
+#define DENSITY 7
 
 uint16_t gol[GOL_Y][GOL_X/16];
 
@@ -129,7 +143,7 @@ int golPixelRead (int x, int y) {
   if (y<0) {y=GOL_Y-1;};
   if (y>=GOL_Y) {y=0;};
   
-  if (getPixel(x,y) != GOL_OFF) {
+  if (getPixel(x,y) == GOL_COL) {
     return 1;
   } else {
     return 0;
@@ -181,7 +195,7 @@ void gameoflife (void) {
   randomSeed(analogRead(A7));
   for (int x=0; x<GOL_X; x++) {
     for (int y=0; y<GOL_Y; y++) {
-      if (random(10) > 7) {
+      if (random(10) > DENSITY) {
         golBitSet(x, y);
         setPixel(x, y, GOL_COL);
       } else {
@@ -204,7 +218,13 @@ void gameoflife (void) {
         if (golBitRead(x, y)) {
           setPixel (x, y, GOL_COL);
         } else {
-          setPixel (x, y, GOL_OFF);
+          // Cycle through the colours until get to "OFF"
+          panelcolour col = getPixel (x, y);
+          for (int c=0; c<GOL_COLS-1; c++) {
+            if (col == golcols[c]) {
+              setPixel (x, y, golcols[c+1]);
+            }
+          }
         }
       }
     }
@@ -217,24 +237,35 @@ void setup() {
 
   Timer1.initialize(5000);  // 200Hz
   Timer1.attachInterrupt(panelScan);
+  delay(500);
 
+#ifdef DO_BRIGHTNESS
+  testBrightness();
+  setBrightness (BRIGHTNESS_MIN);
+  panelClear();
+  delay(1000);
+#else
   setBrightness (BRIGHTNESS_MIN);
   panelClear(true);
   delay(2000);
-
   panelClear();
   delay(1000);
+#endif
 
+#ifdef DO_MANDEL
   mandel();
   delay(5000);
   panelClear();
+#endif
 }
 
 #define DEL 5
 void loop() {
+#ifdef DO_GOL
   gameoflife();
-  return;
+#endif
 
+#ifdef DO_LINES
   for (int x=0; x<64; x++) {
     for (int y=0; y<64; y++) {
       setPixel(x, y, led_blue);
@@ -250,4 +281,5 @@ void loop() {
       setPixel(x, y, led_black);
     }
   }
+#endif
 }

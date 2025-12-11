@@ -348,7 +348,7 @@ void hdlrAsm (int idx, char* pParam) {
 
 void scanLines (void) {
   uint8_t addr = PINC & 0x0F;
-  PORTB = (PORTD & ~(0x0F)) | (RAM[addr] & 0x0F);
+  PORTB = (PORTB & ~(0x0F)) | (RAM[addr] & 0x0F);
   PORTD = (PORTD & ~(0xF0)) | (RAM[addr] & 0xF0);
 }
 

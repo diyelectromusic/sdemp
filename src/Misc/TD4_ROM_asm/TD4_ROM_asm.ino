@@ -1,3 +1,25 @@
+/*
+      MIT License
+      
+      Copyright (c) 2025 emalliab.wordpress.com (Kevin)
+      
+      Permission is hereby granted, free of charge, to any person obtaining a copy of
+      this software and associated documentation files (the "Software"), to deal in
+      the Software without restriction, including without limitation the rights to
+      use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+      the Software, and to permit persons to whom the Software is furnished to do so,
+      subject to the following conditions:
+      
+      The above copyright notice and this permission notice shall be included in all
+      copies or substantial portions of the Software.
+      
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+      FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+      COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHERIN
+      AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+      WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 #include <TimerOne.h>
 
 void hdlrHelp(int idx, char* pParam);
@@ -5,6 +27,7 @@ void hdlrList(int idx, char* pParam);
 void hdlrGoto(int idx, char* pParam);
 void hdlrClear(int idx, char* pParam);
 void hdlrRestore(int idx, char* pParam);
+void hdlrAddress(int idx, char* pParam);
 void hdlrOpcodes(int idx, char* pParam);
 void hdlrAsm (int idx, char* pParam);
 void disassembleROM(void);
@@ -14,17 +37,24 @@ char cmdInput[CMD_BUFFER+1];
 char cmdSaved[CMD_BUFFER+1];
 int  cmdIdx;
 
-#define MAX_LINES 16 // 1..MAX
+#define MAX_4LINES 16 // 1..MAX
+#define MAX_5LINES 32 // 1..MAX
 uint8_t line;
 
-#define ROMSIZE 16
+bool show5bit = false;
 
-uint8_t RAM[ROMSIZE];
-uint8_t ROM[ROMSIZE] = {
+#define MAXROMSIZE 32
+
+uint8_t RAM[MAXROMSIZE];
+uint8_t ROM[MAXROMSIZE] = {
     0xA1, 0x01, 0xA2, 0x51,
     0xA4, 0x01, 0xA8, 0x51,
     0xA4, 0x01, 0xA2, 0x51,
-    0xF0, 0x00, 0x00, 0x00
+    0xF0, 0x00, 0x00, 0x00,
+    0xA1, 0xA2, 0xA4, 0xA8,
+    0xA8, 0xA4, 0xA2, 0xA1,
+    0xA1, 0xA2, 0xA4, 0xA8,
+    0xA8, 0xA4, 0xA2, 0xA1,
 };
 
 typedef void (*hdlr_t)(int idx, char *param);
@@ -36,7 +66,7 @@ struct cmd_t {
   uint8_t idx;
 };
 
-#define NUM_CMDS (16+6)
+#define NUM_CMDS (16+7)
 const cmd_t PROGMEM cmdTable[NUM_CMDS] = {
   // Assembly commands - must be first
   {"ADDA", hdlrAsm, 0},
@@ -62,6 +92,7 @@ const cmd_t PROGMEM cmdTable[NUM_CMDS] = {
   {"G", hdlrGoto, 0},
   {"C", hdlrClear, 0},
   {"R", hdlrRestore, 0},
+  {"A", hdlrAddress, 0},
   {"O", hdlrOpcodes, 0},
 };
 
@@ -192,7 +223,7 @@ bool cmdProcess (void) {
 }
 
 void printbin (uint8_t val, int size) {
-  if ((size != 4) && (size != 8)) {
+  if ((size < 4) || (size > 8)) {
     return;
   }
   for (int i=size-1; i>=0; i--) {
@@ -238,7 +269,11 @@ void printop (uint8_t op) {
 
 void printline (uint8_t ln) {
   Serial.print("b");
-  printbin(ln, 4);
+  if (show5bit) {
+    printbin(ln, 5);
+  } else {
+    printbin(ln, 4);
+  }
   Serial.print(" [");
   printhex(ln,1);
   Serial.print("]");
@@ -257,6 +292,7 @@ void hdlrHelp(int idx, char *pParam) {
   Serial.println("G: Goto");
   Serial.println("C: Clear");
   Serial.println("R: Restore");
+  Serial.println("A: Addr Mode");
   Serial.println("O: Opcodes");
   Serial.println("OpCode");
   Serial.println("OpCode im");
@@ -272,14 +308,15 @@ void hdlrList(int idx, char *pParam) {
 
 void hdlrGoto(int idx, char *pParam) {
   uint16_t newline = str2num(pParam);
+  int maxlines = (show5bit == true) ? MAX_5LINES : MAX_4LINES;
 
-  if (newline < MAX_LINES) {
+  if (newline < maxlines) {
     Serial.print("Goto line ");
     Serial.println(newline);
     line = newline;
   } else {
     Serial.print("Line out of range (0..");
-    Serial.print(MAX_LINES-1);
+    Serial.print(maxlines-1);
     Serial.println(")");
   }
   currentLine();
@@ -287,7 +324,7 @@ void hdlrGoto(int idx, char *pParam) {
 
 void hdlrClear(int idx, char* pParam) {
   Serial.print("Clearing RAM ...");
-  for (int i=0; i<ROMSIZE; i++) {
+  for (int i=0; i<MAXROMSIZE; i++) {
     RAM[i] = 0;
   }
   Serial.println(" Done");
@@ -296,11 +333,21 @@ void hdlrClear(int idx, char* pParam) {
 
 void hdlrRestore(int idx, char* pParam) {
   Serial.print("Restoring RAM from ROM ...");
-  for (int i=0; i<ROMSIZE; i++) {
+  for (int i=0; i<MAXROMSIZE; i++) {
     RAM[i] = ROM[i];
   }
   Serial.println(" Done");
   line = 0;
+}
+
+void hdlrAddress(int idx, char *pParam) {
+  if (show5bit) {
+    Serial.print("Address Mode = 4 bit\n\n");
+    show5bit = false;
+  } else {
+    Serial.print("Address Mode = 5 bit\n\n");
+    show5bit = true;
+  }
 }
 
 void hdlrOpcodes(int idx, char* pParam) {
@@ -342,18 +389,29 @@ void hdlrAsm (int idx, char* pParam) {
   Serial.print("\n");
 
   line++;
-  line = line % MAX_LINES;
+  if (show5bit) {
+    line = line % MAX_5LINES;
+  } else {
+    line = line % MAX_4LINES;
+  }
   currentLine();
 }
 
 void scanLines (void) {
-  uint8_t addr = PINC & 0x0F;
+  uint8_t addr;
+  if (show5bit) {
+    // 5 bit address mode
+    addr = PINC & 0x1F;
+  } else {
+    // 4 bit address mode
+    addr = PINC & 0x0F;
+  }
   PORTB = (PORTB & ~(0x0F)) | (RAM[addr] & 0x0F);
   PORTD = (PORTD & ~(0xF0)) | (RAM[addr] & 0xF0);
 }
 
 void disassemble() {
-  for (int i=0; i<ROMSIZE; i++) {
+  for (int i=0; i<MAXROMSIZE/2; i++) {
     uint8_t cmd = RAM[i] >> 4;
     uint8_t im  = RAM[i] & 0x0F;
     printline(i);
@@ -362,6 +420,20 @@ void disassemble() {
     printins(RAM[i]);
     Serial.print("\t");
     printop(RAM[i]);
+  
+    if (show5bit) {
+      Serial.print("\t");
+      int i2 = i + MAXROMSIZE/2;
+      cmd = RAM[i2] >> 4;
+      im  = RAM[i2] & 0x0F;
+      printline(i2);
+      Serial.print(": ");
+
+      printins(RAM[i2]);
+      Serial.print("\t");
+      printop(RAM[i2]);
+    }
+
     Serial.print("\n");
   }
 }

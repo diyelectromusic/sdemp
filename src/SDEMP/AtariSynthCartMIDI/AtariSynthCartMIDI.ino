@@ -28,6 +28,7 @@
 */
 #include <MIDI.h>
 #include <TimerOne.h>
+#include <Keypad.h>
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 #define MIDI_CHANNEL 1
@@ -53,24 +54,28 @@ int rowPins[ROWS] = {11, 10, 9, 8};
 //       Each bit has an entry in the following
 //       array which gets written directly out.
 //
-uint8_t row[ROWS];
+// There are two copies - one for the MIDI
+// input and one for any additionally attached
+// keypad in passthrough
+//
+uint8_t row[2][ROWS];
 uint8_t colbits[COLS] = {
   0x02,  // C0 = A1  PORTC
   0x01,  // C1 = A0  PORTC
   0x10   // C2 = D12 PORTB
 };
 
-void keyOn (int r, int c) {
-  if (r < ROWS && c < COLS) {
+void keyOn (int kp, int r, int c) {
+  if (r < ROWS && c < COLS && kp < 2) {
     // Clear the bit as need active LOW
-    row[r] &= (~colbits[c]);
+    row[kp][r] &= (~colbits[c]);
   }
 }
 
-void keyOff (int r, int c) {
-  if (r < ROWS && c < COLS) {
+void keyOff (int kp, int r, int c) {
+  if (r < ROWS && c < COLS && kp < 2) {
     // Set the bit as need active LOW
-    row[r] |= colbits[c];
+    row[kp][r] |= colbits[c];
   }
 }
 
@@ -82,54 +87,120 @@ char keys[ROWS][COLS] = {
   {69,70,71},
 };
 
-void handleNoteOn(byte channel, byte pitch, byte velocity) {
+// Set up a Keypad routine to handle passthrough from
+// any additional plugged in keypad.
+//
+// For Atari, the COLs have hardware pull-ups.
+// See: https://atariage.com/2600/archives/schematics/Schematic_2600_Accessories_Low.html
+// But in Keypad Lib, it is ROWS that are inputs with
+// pull-ups so need to swap ROWS/COLS otherwise get issues.
+//
+// This works best for an Atari controller circuit that
+// doesn't include the RC timing circuit of the original
+// console, for scanning paddles.
+//
+// If the RC circuit is included, the the non-reversed
+// version works best, but certain two-key combinations
+// will not be scanned properly.
+//
+// This code is assuming the reversed format.
+// Note: MIDI values here must match those in the
+//       main keypad map, but with transposed r/c.
+//
+const byte KPROWS = 3;
+const byte KPCOLS = 4;
+char kpkeys[KPROWS][KPCOLS] = {
+  {60,63,66,69},
+  {61,64,67,70},
+  {62,65,68,71},
+};
+byte kpRowPins[KPROWS] = {A3,A2,2};
+byte kpColPins[KPCOLS] = {6,5,4,3};
+Keypad kp = Keypad( makeKeymap(kpkeys), kpRowPins, kpColPins, KPROWS, KPCOLS);
+
+void midiNoteOn(byte channel, byte pitch, byte velocity) {
   if (velocity == 0) {
     // Handle this as a "note off" event
-    handleNoteOff(channel, pitch, velocity);
+    midiNoteOff(channel, pitch, velocity);
     return;
   }
+
+  ledOn();
 
   for (int r=0; r<ROWS; r++) {
     for (int c=0; c<COLS; c++) {
       if (keys[r][c] == pitch) {
-        keyOn(r, c);
+        keyOn(0, r, c);
       }
     }
   }
 }
 
-void handleNoteOff(byte channel, byte pitch, byte velocity) {
+void keypadNoteOn(byte pitch) {
+  ledOn();
   for (int r=0; r<ROWS; r++) {
     for (int c=0; c<COLS; c++) {
       if (keys[r][c] == pitch) {
-        keyOff(r, c);
+        keyOn(1, r, c);
+      }
+    }
+  }
+}
+
+void midiNoteOff(byte channel, byte pitch, byte velocity) {
+  ledOff();
+  for (int r=0; r<ROWS; r++) {
+    for (int c=0; c<COLS; c++) {
+      if (keys[r][c] == pitch) {
+        keyOff(0, r, c);
+      }
+    }
+  }
+}
+
+void keypadNoteOff(byte pitch) {
+  ledOff();
+  for (int r=0; r<ROWS; r++) {
+    for (int c=0; c<COLS; c++) {
+      if (keys[r][c] == pitch) {
+        keyOff(1, r, c);
       }
     }
   }
 }
 
 void scanKeypad (void) {
-  PORTB = (PORTB & (~0x20)) | 0x20;
-
   // ROWS: D11-D8 = ROW1-ROW4
+  // NB: All signals are active LOW
   if ((PINB & 0x08) == 0) {  // D11
-    PORTB = (PORTB & (~0x10)) | (row[0] & 0x10); // COL D12
-    PORTC = (PORTC & (~0x03)) | (row[0] & 0x03); // COL A0, A1
+    PORTB = (PORTB & (~0x10)) | (row[0][0] & row[1][0] & 0x10); // COL D12
+    PORTC = (PORTC & (~0x03)) | (row[0][0] & row[1][0] & 0x03); // COL A0, A1
   }
   if ((PINB & 0x04) == 0) {  // D10
-    PORTB = (PORTB & (~0x10)) | (row[1] & 0x10);
-    PORTC = (PORTC & (~0x03)) | (row[1] & 0x03);
+    PORTB = (PORTB & (~0x10)) | (row[0][1] & row[1][1] & 0x10);
+    PORTC = (PORTC & (~0x03)) | (row[0][1] & row[1][1] & 0x03);
   }
   if ((PINB & 0x02) == 0) {  // D9
-    PORTB = (PORTB & (~0x10)) | (row[2] & 0x10);
-    PORTC = (PORTC & (~0x03)) | (row[2] & 0x03);
+    PORTB = (PORTB & (~0x10)) | (row[0][2] & row[1][2] & 0x10);
+    PORTC = (PORTC & (~0x03)) | (row[0][2] & row[1][2] & 0x03);
   }
   if ((PINB & 0x01) == 0) {  // D8
-    PORTB = (PORTB & (~0x10)) | (row[3] & 0x10);
-    PORTC = (PORTC & (~0x03)) | (row[3] & 0x03);
+    PORTB = (PORTB & (~0x10)) | (row[0][3] & row[1][3] & 0x10);
+    PORTC = (PORTC & (~0x03)) | (row[0][3] & row[1][3] & 0x03);
   }
+}
 
-  PORTB = (PORTB & (~0x20));
+void ledInit() {
+  pinMode(13, OUTPUT);
+  digitalWrite(13, LOW);
+}
+
+void ledOn() {
+  digitalWrite(13, HIGH);
+}
+
+void ledOff() {
+  digitalWrite(13, LOW);
 }
 
 void setup() {
@@ -141,18 +212,17 @@ void setup() {
     digitalWrite(colPins[c],HIGH);
   }
 
-  // D13 for timing of interrupt routine
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  ledInit();
 
   for (int r=0; r<ROWS; r++) {
     for (int c=0; c<COLS; c++) {
-      keyOff(r, c);
+      keyOff(0, r, c);
+      keyOff(1, r, c);
     }
   }
 
-  MIDI.setHandleNoteOn(handleNoteOn);
-  MIDI.setHandleNoteOff(handleNoteOff);
+  MIDI.setHandleNoteOn(midiNoteOn);
+  MIDI.setHandleNoteOff(midiNoteOff);
   MIDI.begin(MIDI_CHANNEL);
 
   Timer1.initialize(500);  // 0.1mS
@@ -161,4 +231,19 @@ void setup() {
 
 void loop() {
   MIDI.read();
+
+  if (kp.getKeys()) {
+    for (int i=0; i<LIST_MAX; i++) {
+      if (kp.key[i].stateChanged) {
+        switch (kp.key[i].kstate) {
+          case PRESSED:
+            keypadNoteOn(kp.key[i].kchar);
+            break;
+          case RELEASED:
+            keypadNoteOff(kp.key[i].kchar);
+            break;
+        }
+      }
+    }
+  }
 }

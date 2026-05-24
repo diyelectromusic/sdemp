@@ -33,7 +33,7 @@
 */
 #include "AY3891x.h"
 
-#define TIMING_PIN 11
+//#define TIMING_PIN 11
 
 #include "MozziConfigValues.h"
 #define MOZZI_AUDIO_MODE MOZZI_OUTPUT_EXTERNAL_CUSTOM
@@ -104,7 +104,7 @@ AY3891x psg( 17, 8, 7, 6, 5, 4, 3, 2, BDIR, BC2, BC1);
 #define BC1HIGH {PORTC |= 0x01;} // A0 HIGH
 #define BC2LOW  {PORTC &= 0xFD;} // A1 LOW
 #define BC2HIGH {PORTC |= 0x02;} // A1 HIGH
-#define BDIRLOW  {PORTC &= 0xF7;} // A2 LOW
+#define BDIRLOW  {PORTC &= 0xFB;} // A2 LOW
 #define BDIRHIGH {PORTC |= 0x04;} // A2 HIGH
 
 void ayFastWriteSetup () {
@@ -125,7 +125,7 @@ void ayFastWrite (byte reg, byte val) {
   // Latch address
   // NB: Addresses are all in range 0..15 so don't need to
   //     worry about writing out bits 6,7 - just ensure set to zero
-  PORTD = (PORTD & 0x03) | ((reg & 0xCF)<<2); // Bits 0-5 map to PORTD[2:7]
+  PORTD = (PORTD & 0x03) | ((reg & 0x3F)<<2); // Bits 0-5 map to PORTD[2:7]
   PORTB = (PORTB & 0xFE); // Bit 6 maps to PORTB[0]
   PORTC = (PORTC & 0xF7); // Bit 7 maps to PORTC[3]
 
@@ -144,7 +144,7 @@ void ayFastWrite (byte reg, byte val) {
   BDIRHIGH;
 
   // Write data
-  PORTD = (PORTD & 0x03) | ((val & 0xCF)<<2); // Shift bits 0:5 to 2:7
+  PORTD = (PORTD & 0x03) | ((val & 0x3F)<<2); // Shift bits 0:5 to 2:7
   PORTB = (PORTB & 0xFE) | ((val & 0x40)>>6); // Shift bit 6 to 0
   PORTC = (PORTC & 0xF7) | ((val & 0x80)>>4); // Shift bit 7 to 3
 

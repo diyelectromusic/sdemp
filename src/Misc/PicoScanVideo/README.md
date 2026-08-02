@@ -4,7 +4,7 @@ This is a version of the Raspberry Pi provided [scanvideo library](https://githu
 
 Full details, including the assumed circuit to be used to connect to a VGA display, can be found here: https://emalliab.wordpress.com/2026/08/01/simplified-pico-vga-part-2/
 
-##Instructions for reproducing the sketch##
+## Instructions for reproducing the sketch
 
 Copy the contents of this folder to a new sketch. PicoScanVideo.ino is the main file.  Then copy the following files from the Raspberry Pi pico-extras gitHub into the sketch:
 
@@ -35,7 +35,7 @@ Finally, perrform the changes shown in the scanvideo.c.diff file to scanvideo.c 
 
 This should now build as a sketch within Earle F. Philhower's Arduino Pico core: https://github.com/earlephilhower/arduino-pico
 
-##Changing GPIO Range##
+## Changing GPIO Range
 
 As provided the code assumes using GPIO 12-17. It is possible to change the configuration to use the higher GPIO range of the RP2350B by changing the following in vgamode.h:
 ```
@@ -50,7 +50,7 @@ As provided the code assumes using GPIO 12-17. It is possible to change the conf
 
 This configures the code to use GPIO 40-45 on an RP2350.
 
-##Changing VGA Mode##
+## Changing VGA Mode
 
 As one might expect the VGA mode can be changed by updating the values in vgamode.h but then things get a little complicated.
 

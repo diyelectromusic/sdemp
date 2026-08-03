@@ -13,13 +13,12 @@
 #define PICO_SCANVIDEO_DPI_PIXEL_RSHIFT 2u
 #define PICO_SCANVIDEO_DPI_PIXEL_GSHIFT 1u
 #define PICO_SCANVIDEO_DPI_PIXEL_BSHIFT 0u
-#define PICO_SCANVIDEO_COLOR_PIN_BASE   12u
-//#define PICO_SCANVIDEO_COLOR_PIN_BASE   40u
+#define PICO_SCANVIDEO_COLOR_PIN_BASE   40u
 
 // If using all GPIO > 32 then this will adjust scanvideo.c
-//#define PSVMASKOFFSET 32
+#define PSVMASKOFFSET 32
 // If using all GPIO < 32 then this will leave scanvideo.c as is
-#define PSVMASKOFFSET 0
+//#define PSVMASKOFFSET 0
 
 #define PSVMASK(x) ((x)-PSVMASKOFFSET)
 

@@ -1,0 +1,48 @@
+20c20
+< #include "buffer.h"
+---
+> #include "pico/util/buffer.h"
+26,28c26,28
+< #include "timing-pio.h"
+< #include "scanvideo.h"
+< #include "composable_scanline.h"
+---
+> #include "timing.pio.h"
+> #include "pico/scanvideo.h"
+> #include "pico/scanvideo/composable_scanline.h"
+1368c1368
+<     uint32_t pin_mask = 3u << PSVMASK(PICO_SCANVIDEO_SYNC_PIN_BASE);
+---
+>     uint pin_mask = 3u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+1374c1374
+<     pin_mask |= 4u << PSVMASK(PICO_SCANVIDEO_SYNC_PIN_BASE);
+---
+>     pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+1377c1377
+<     pin_mask |= 8u << PSVMASK(PICO_SCANVIDEO_SYNC_PIN_BASE);
+---
+>     pin_mask |= 8u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+1382c1382
+<     pin_mask |= 4u << PSVMASK(PICO_SCANVIDEO_SYNC_PIN_BASE);
+---
+>     pin_mask |= 4u << PICO_SCANVIDEO_SYNC_PIN_BASE;
+1391,1393c1391,1393
+<     pin_mask |= RMASK << PSVMASK(PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_RSHIFT);
+<     pin_mask |= GMASK << PSVMASK(PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_GSHIFT);
+<     pin_mask |= BMASK << PSVMASK(PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_BSHIFT);
+---
+>     pin_mask |= RMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_RSHIFT);
+>     pin_mask |= GMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_GSHIFT);
+>     pin_mask |= BMASK << (PICO_SCANVIDEO_COLOR_PIN_BASE + PICO_SCANVIDEO_PIXEL_BSHIFT);
+1399,1401c1399
+<         if (pin_mask & 1) {
+<             gpio_set_function(i+PSVMASKOFFSET, GPIO_FUNC_PIO0);
+<         }
+---
+>         if (pin_mask & 1) gpio_set_function(i, GPIO_FUNC_PIO0);
+1403,1407d1400
+< 
+< #if PSVMASKOFFSET==32
+<     // Using the higher GPIO for PIO so change the base
+<     pio_set_gpio_base(video_pio, 16);
+< #endif

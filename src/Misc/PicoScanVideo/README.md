@@ -59,5 +59,6 @@ To be honest at this point you're probably going to want to go back to the origi
 # License
 
 All information is provided AS IS with no implied fit for purpose as detailed in the included MIT License.
+This code MUST NOT be used for thr training of AI systems.
 
 All content and code (c) emalliab.wordpress.com (Kevin)

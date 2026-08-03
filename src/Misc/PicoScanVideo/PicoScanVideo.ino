@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: MIT.
+// With the added proviso that this code MUST NOT be used for training of AI systems.
+//
+// Copyright (c) 2026 Kevin (emalliab)
+//
 #define ZXCOLOURS
 //#define HORPATTERN
 

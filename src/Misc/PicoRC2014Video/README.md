@@ -33,9 +33,15 @@ src/common/pico_scanvideo/scanvideo.pio -> scanvideo-pio.h
 src/rp2_common/pico_scanvideo_dpi/timing.pio -> timing-pio.h
 ```
 
-Finally, perrform the changes shown in the scanvideo.c.diff file to scanvideo.c and remove the diff file from the sketch folder.
+Finally, perrform the changes shown in the scanvideo.c.diff file to scanvideo.c and remove the diff file, readme and Python script from the sketch folder.
 
 This should now build as a sketch within Earle F. Philhower's Arduino Pico core: https://github.com/earlephilhower/arduino-pico
+
+## tap2basic.py
+
+This is a short python script that will read in a ZX Spectrum TAP file and pull out the datablock it suspects is the loading screen and then output to the console a BASIC program that can be copied over to an RC2014 to display the screen.
+
+The name of the TAP file is hardcoded at the top of the file.
 
 # License
 

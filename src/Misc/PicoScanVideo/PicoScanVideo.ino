@@ -6,14 +6,16 @@
 #define ZXCOLOURS
 //#define HORPATTERN
 
+#include "vgamode.h"
 #include "scanvideo.h"
 #include "composable_scanline.h"
 
 #define vga_mode vga_mode_320x240_60
 static bool invert = false;
 
+#ifdef VGA_RGBY1111
 #define VGA_RGBY_1111(r,g,b,y) ((y<<3)|(r<<2)|(g<<1)|b)
-static uint16_t zxd_colour_words[16] = {
+const uint16_t zxd_colour_words[16] = {
   VGA_RGBY_1111(0,0,0,0), // Black
   VGA_RGBY_1111(0,0,1,0), // Blue
   VGA_RGBY_1111(1,0,0,0), // Red
@@ -31,6 +33,28 @@ static uint16_t zxd_colour_words[16] = {
   VGA_RGBY_1111(1,1,0,1), // Bright Yellow
   VGA_RGBY_1111(1,1,1,1)  // Bright White
 };
+#endif
+#ifdef VGA_RGB222
+#define VGA_RGB_222(r,g,b) ((r##UL<<4)|(g##UL<<2)|b##UL)
+const uint16_t zxd_colour_words[16] = {
+  VGA_RGB_222(0,0,0), // Black
+  VGA_RGB_222(0,0,2), // Blue
+  VGA_RGB_222(2,0,0), // Red
+  VGA_RGB_222(2,0,2), // Magenta
+  VGA_RGB_222(0,2,0), // Green
+  VGA_RGB_222(0,2,2), // Cyan
+  VGA_RGB_222(2,2,0), // Yellow
+  VGA_RGB_222(2,2,2), // White
+  VGA_RGB_222(0,0,0), // Bright Black
+  VGA_RGB_222(0,0,3), // Bright Blue
+  VGA_RGB_222(3,0,0), // Bright Red
+  VGA_RGB_222(3,0,3), // Bright Magenta
+  VGA_RGB_222(0,3,0), // Bright Green
+  VGA_RGB_222(0,3,3), // Bright Cyan
+  VGA_RGB_222(3,3,0), // Bright Yellow
+  VGA_RGB_222(3,3,3)  // Bright White
+};
+#endif
 
 #ifdef HORPATTERN
 void draw_zxcolor_bar(scanvideo_scanline_buffer_t *buffer) {

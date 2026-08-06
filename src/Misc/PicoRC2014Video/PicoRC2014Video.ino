@@ -3,6 +3,7 @@
 //
 // Copyright (c) 2026 Kevin (emalliab)
 //
+#include "vgamode.h"
 #include "scanvideo.h"
 #include "composable_scanline.h"
 #include "zxsdisplay.h"

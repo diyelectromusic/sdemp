@@ -87,14 +87,16 @@ void setup1() {
 }
 
 void loop1() {
-  uint32_t gpio32 = gpio_get_all();
+  while (1) {
+    uint32_t gpio32 = gpio_get_all();
 
-  // Look for /MEMRQ, /WR
-  if ((gpio32 & GP_CTRL_MASK) == ((1<<GP_RD)|(0<<GP_WR)|(1<<GP_M1)|(0<<GP_MREQ)|(1<<GP_IORQ)))
-  {
-    // Grab the data off the bus and update RAM
-    uint16_t addr16 = (GP_ADDR_MASK & gpio32) >> GP_ADDR_START;
-    uint8_t data8 = (GP_DATA_MASK & gpio32) >> GP_DATA_START;
-    ram[addr16] = data8;
+    // Look for /MEMRQ, /WR
+    if ((gpio32 & GP_CTRL_MASK) == ((1<<GP_RD)|(0<<GP_WR)|(1<<GP_M1)|(0<<GP_MREQ)|(1<<GP_IORQ)))
+    {
+      // Grab the data off the bus and update RAM
+      uint16_t addr16 = (GP_ADDR_MASK & gpio32) >> GP_ADDR_START;
+      uint8_t data8 = (GP_DATA_MASK & gpio32) >> GP_DATA_START;
+      ram[addr16] = data8;
+    }
   }
 }

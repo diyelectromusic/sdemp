@@ -8,6 +8,18 @@
 #include "composable_scanline.h"
 #include "zxsdisplay.h"
 #include "zxscanline.h"
+#include "int50hz-pio.h"
+
+//------------------------------
+// Optional 50Hz /INT Output
+// (must be via 74HCT14)
+//------------------------------
+#define Z80_INT_50HZ
+
+//#define Z80_INT_GPIO 37
+#define Z80_INT_GPIO 33
+#define Z80_INT_PIO  pio0
+#define Z80_INT_SM   2
 
 //------------------------------
 // 64K RAM address space copy
@@ -29,15 +41,28 @@ uint8_t ram[RAMSIZE];
 
 uint8_t borderColour = 0;
 
+void int50hz_setup() {
+#ifdef Z80_INT_50HZ
+    uint offset = pio_add_program(Z80_INT_PIO, &int50hz_program);
+    int50hz_program_init(Z80_INT_PIO, Z80_INT_SM, offset, Z80_INT_GPIO);
+    pio_sm_put_blocking(Z80_INT_PIO, Z80_INT_SM, INT50HZ_LOOP);
+    pio_sm_set_enabled(Z80_INT_PIO, Z80_INT_SM, true);
+#endif
+}
+
+
 void setup() {
     for (int i=0; i<RAMSIZE; i++) {
       ram[i] = 0x00;
     }
 
-    // initialize video and interrupts on core 1
+    // initialize video and interrupts on core 0
     scanvideo_setup(&vga_mode);
     scanvideo_timing_enable(true);
     zxs_scanline_init(&vga_mode);
+
+    // start optional 50Hz /INT
+    int50hz_setup();
 }
 
 void loop() {

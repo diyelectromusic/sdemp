@@ -5,7 +5,7 @@
 //
 #include "hardware/pio.h"  // For definitions used in checks
 
-#if 1
+#if 0
 #define VGA_RGBY1111
 #define PICO_SCANVIDEO_COLOR_PIN_COUNT  4u
 #define PICO_SCANVIDEO_DPI_PIXEL_RCOUNT 2u

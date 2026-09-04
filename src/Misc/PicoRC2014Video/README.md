@@ -53,7 +53,7 @@ The file PicoRC2014Video has Z80_INT_50HZ enabled which will generate a 50Hz int
 
 A UF2 file for use with the Pimoroni PGA2350 and V2 of my PCB is provided, but this is **use at your own risk**.
 
-Full details can be found here: 
+Full details can be found here: https://emalliab.wordpress.com/2026/09/04/zx-spectrum-compatible-video-for-rc2014-part-3/
 
 ## tap2basic.py
 

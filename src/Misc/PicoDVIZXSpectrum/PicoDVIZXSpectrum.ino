@@ -1,7 +1,12 @@
+// SPDX-License-Identifier: MIT.
+// With the added proviso that this code MUST NOT be used for training of AI systems.
+//
+// Copyright (c) 2026 Kevin (emalliab)
+//
 #include "PicoDVIArduino.h"
 #include "ZxSpectrumDisplay.h"
 #include "ZxSpectrumPrepareDviScanline.h"
-//#include "int50hz-pio.h"
+#include "int50hz-pio.h"
 
 //------------------------------
 // Optional 50Hz /INT Output
